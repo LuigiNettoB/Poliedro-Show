@@ -133,6 +133,10 @@ class Login(BaseFrame):
                                  light_image=Image.open("imagens/cadeado.png"), size=(17, 17))
         signup_icon = CTkImage(dark_image=Image.open("imagens/useradd.png"),
                                light_image=Image.open("imagens/useradd.png"), size=(17, 17))
+        self.eye_icon = CTkImage(dark_image=Image.open("imagens/olho-senha.png"),
+                               light_image=Image.open("imagens/olho-senha.png"), size=(17, 17))
+        self.closed_eye = CTkImage(dark_image=Image.open("imagens/ocultar-senha.png"),
+                               light_image=Image.open("imagens/ocultar-senha.png"), size=(17, 17))
 
         # Frame lateral com imagem
         self.left_frame = CTkFrame(self, fg_color="#ffffff")
@@ -169,9 +173,22 @@ class Login(BaseFrame):
         # Campo de senha
         CTkLabel(self.frame_login, text=" Senha:", text_color="#ffffff", image=password_icon,
                  compound="left", font=("courier new", 16, "bold")).grid(row=4, column=0, sticky="w", pady=(0, 5))
-        self.senha_login = CTkEntry(self.frame_login, fg_color="#3B5055", border_color="#B5C6D0",
-                                    border_width=2, text_color="#ffffff", show="*", height=35, corner_radius=8, font=("courier new",14, "bold"))
-        self.senha_login.grid(row=5, column=0, sticky="ew", pady=(0, 30))
+        
+
+        senha_frame = CTkFrame(self.frame_login, fg_color="transparent")
+        senha_frame.grid(row=5, column=0, sticky="ew", pady=(0, 30))
+        senha_frame.grid_columnconfigure(0, weight=1)
+
+        # Campo de senha 
+        self.senha_login = CTkEntry(senha_frame, fg_color="#3B5055", border_color="#B5C6D0",
+                             border_width=2, text_color="#ffffff", show="*", height=35,
+                            corner_radius=8, font=("courier new", 14, "bold"))
+        self.senha_login.grid(row=0, column=0, sticky="ew")
+
+        # Botão de mostrar/ocultar senha 
+        self.btn_ocultar_senha = CTkButton(senha_frame, image=self.closed_eye, height=35,
+                                   width=35, text="", fg_color="#3B5055", hover_color="#2F3E43", corner_radius=8, command=self.toggle_senha)
+        self.btn_ocultar_senha.grid(row=0, column=1, padx=(5, 0))
 
         # Botão login
         CTkButton(self.frame_login, text="LOGIN", fg_color="#FF9700", hover_color="#c27402",
@@ -181,6 +198,17 @@ class Login(BaseFrame):
         CTkButton(self.frame_login, text="Ainda não tem conta? Cadastre-se", fg_color="#D22D23", hover_color="#942019",
                   font=("courier new", 14,"bold"), text_color="#ffffff", image=signup_icon,
                   command=lambda: self.controller.show_frame(Cadastro), height=45).grid(row=7, column=0, sticky="ew", pady=(10,0))
+
+
+    def toggle_senha(self):
+        if self.senha_login.cget("show") == "":
+            self.senha_login.configure(show="*")
+            self.btn_ocultar_senha.configure(image=self.closed_eye)
+        else:
+            self.senha_login.configure(show="")
+            self.btn_ocultar_senha.configure(image=self.eye_icon)
+
+
 
     def redimensionar_imagem_lateral(self, event=None):
         new_width = self.left_frame.winfo_width()
