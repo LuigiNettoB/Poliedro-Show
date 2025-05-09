@@ -1,6 +1,6 @@
 from customtkinter import *
 from PIL import Image
-import pyodbc
+import sqlite3
 import tkinter as tk
 import random
 import tkinter.messagebox as msgbox
@@ -9,8 +9,8 @@ import tkinter.ttk as ttk
 
 class BancoDeDados:
     def __init__(self, db_file):
-        self.dados_conexao = f"Driver={{SQLite3 ODBC Driver}};Server=localhost;Database={db_file}"
-        self.conexao = pyodbc.connect(self.dados_conexao)
+        self.dados_conexao = "PI.db"
+        self.conexao = sqlite3.connect(self.dados_conexao)
         self.cursor = self.conexao.cursor()
         print('Conectado com sucesso')
 
@@ -155,31 +155,31 @@ class Login(BaseFrame):
 
         # Título e subtítulo
         CTkLabel(self.frame_login, text="Faça seu Login", text_color="#ffffff",
-                 font=("fixedsys", 28)).grid(row=0, column=0, sticky="w", pady=(50, 5))
+                 font=("courier new", 28, "bold")).grid(row=0, column=0, sticky="w", pady=(50, 5))
         CTkLabel(self.frame_login, text="Entre na sua conta", text_color="#ffffff",
-                 font=("fixedsys", 16)).grid(row=1, column=0, sticky="w", pady=(0, 20))
+                 font=("courier new", 16, "bold")).grid(row=1, column=0, sticky="w", pady=(0, 20))
 
         # Campo de email
         CTkLabel(self.frame_login, text=" Email:", text_color="#ffffff", image=email_icon,
-                 compound="left", font=("fixedsys", 16, "bold")).grid(row=2, column=0, sticky="w", pady=(0, 5))
+                 compound="left", font=("courier new", 16, "bold")).grid(row=2, column=0, sticky="w", pady=(0, 5))
         self.email_login = CTkEntry(self.frame_login, fg_color="#3B5055", border_color="#B5C6D0",
-                                    border_width=2, text_color="#ffffff", height=35,corner_radius=8, font=("fixedsys",14))
+                                    border_width=2, text_color="#ffffff", height=35,corner_radius=8, font=("courier new",14, "bold"))
         self.email_login.grid(row=3, column=0, sticky="ew", pady=(0, 20))
 
         # Campo de senha
         CTkLabel(self.frame_login, text=" Senha:", text_color="#ffffff", image=password_icon,
-                 compound="left", font=("fixedsys", 16, "bold")).grid(row=4, column=0, sticky="w", pady=(0, 5))
+                 compound="left", font=("courier new", 16, "bold")).grid(row=4, column=0, sticky="w", pady=(0, 5))
         self.senha_login = CTkEntry(self.frame_login, fg_color="#3B5055", border_color="#B5C6D0",
-                                    border_width=2, text_color="#ffffff", show="*", height=35, corner_radius=8, font=("fixedsys",14))
+                                    border_width=2, text_color="#ffffff", show="*", height=35, corner_radius=8, font=("courier new",14, "bold"))
         self.senha_login.grid(row=5, column=0, sticky="ew", pady=(0, 30))
 
         # Botão login
         CTkButton(self.frame_login, text="LOGIN", fg_color="#FF9700", hover_color="#c27402",
-                  font=("fixedsys", 22), text_color="#ffffff", command=self.login_usuario, height=45, corner_radius=10).grid(row=6, column=0, sticky="ew", pady=(10, 15))
+                  font=("courier new", 22, "bold"), text_color="#ffffff", command=self.login_usuario, height=45, corner_radius=10).grid(row=6, column=0, sticky="ew", pady=(10, 15))
 
         # Botão cadastro
         CTkButton(self.frame_login, text="Ainda não tem conta? Cadastre-se", fg_color="#D22D23", hover_color="#942019",
-                  font=("fixedsys", 14), text_color="#ffffff", image=signup_icon,
+                  font=("courier new", 14,"bold"), text_color="#ffffff", image=signup_icon,
                   command=lambda: self.controller.show_frame(Cadastro), height=45).grid(row=7, column=0, sticky="ew", pady=(10,0))
 
     def redimensionar_imagem_lateral(self, event=None):
@@ -515,7 +515,7 @@ class Perguntas(BaseFrame):
         self.criar_tela()
 
     def obter_perguntas(self):
-        conexao = pyodbc.connect("DRIVER={SQLite3 ODBC Driver};DATABASE=PI.db;")
+        conexao = sqlite3.connect("PI.db")
         cursor = conexao.cursor()
         
         cursor.execute("SELECT dificuldade, pergunta, altA, altB, altC, altD, correta, dica FROM Pergunta")
