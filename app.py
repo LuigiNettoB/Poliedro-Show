@@ -33,7 +33,20 @@ class BancoDeDados:
 
     def carregar_materias(self):
         self.cursor.execute("SELECT sigla FROM Materia")
+        return self.cursor.fetchall()[1::]
+    
+    def carregar_materias_perguntas(self):
+        self.cursor.execute('''SELECT m.sigla, COUNT(p.pergunta) as quantidade_perguntas
+                            FROM Materia m
+                            LEFT JOIN Pergunta p ON m.sigla = p.materia
+                            GROUP BY m.sigla
+                            ORDER BY m.sigla;
+                            ''')
         return self.cursor.fetchall()
+    
+    def cadastrar_materia(self,sigla):
+        self.cursor.execute("INSERT INTO Materia (sigla) VALUES (?)",(sigla,))
+        self.conexao.commit()
 
     def cadastrar_pergunta(self, pergunta, alt_a, alt_b, alt_c, alt_d, dica, dificuldade, correta,materia):
         def inserir_no_banco():
@@ -60,6 +73,14 @@ class BancoDeDados:
 
         threading.Thread(target=deletar_no_banco, daemon=True).start()
 
+    def materia_atual(self,materia):
+        self.cursor.execute("UPDATE MateriaAtual SET materia = ? WHERE id = 1", (materia,))
+        self.conexao.commit()
+
+    def mostrar_materia_atual(self):
+        self.cursor.execute("SELECT materia FROM MateriaAtual")
+        return self.cursor.fetchall()
+
 class App(CTk):
     def __init__(self):
         super().__init__()
@@ -77,7 +98,7 @@ class App(CTk):
         self.frames = {}
         
         # Criar todos os frames
-        for F in (Login, Materias, Menu, MenuProfessor, Perguntas, PerguntasProfessor, Cadastro, CentralProfessor, Jogadores):
+        for F in (Login, MateriasJogo,MateriasProfessor, Menu, MenuProfessor, Perguntas, PerguntasProfessor, Cadastro, CentralProfessor, Jogadores):
             frame = F(self.container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -361,7 +382,7 @@ class CentralProfessor(BaseFrame):
 
         CTkButton(self, width=200, height=300, text="Perguntas", fg_color="#999999", text_color="#ffffff",font=("fixedsys",22,"bold"), command=lambda: self.controller.show_frame(PerguntasProfessor)).grid(row = 1, column = 0, padx = (120,25), pady = 200)
         CTkButton(self, width=200, height=300, text="Jogadores", fg_color="#999999", text_color="#ffffff",font=("fixedsys",22,"bold"), command=lambda: self.controller.show_frame(Jogadores)).grid(row = 1, column =1, padx = 25, pady=200 )
-        CTkButton(self, width=200, height=300, text="Matérias", fg_color="#999999", text_color="#ffffff",font=("fixedsys",22,"bold")).grid(row = 1, column = 2, padx=25,pady=200)
+        CTkButton(self, width=200, height=300, text="Matérias", fg_color="#999999", text_color="#ffffff",font=("fixedsys",22,"bold"), command=lambda: self.controller.show_frame(MateriasProfessor)).grid(row = 1, column = 2, padx=25,pady=200)
         CTkButton(self, width=200, height=300, text="Instruções", fg_color="#999999", text_color="#ffffff", font=("fixedsys",22,"bold")).grid(row=1,column=3,padx=25,pady=200)
 
 class Jogadores(BaseFrame):
@@ -422,7 +443,7 @@ class Jogadores(BaseFrame):
             print("Erro ao carregar dados:", e)
         
 
-class Materias(BaseFrame):
+class MateriasJogo(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         self.configure(width=1200, height=780, fg_color="#ffffff")
@@ -430,6 +451,7 @@ class Materias(BaseFrame):
         self.banco = controller.banco
         self.materias = []
         self.mostrar_materias()
+        self.materia = " "
         self.fonte = ("fixedsys",22,"bold")
         self.criar_tela()
     
@@ -440,11 +462,14 @@ class Materias(BaseFrame):
 
         CTkLabel(master=self, text="Escolha a matéria para o seu jogo: ", font=("fixedsys",22,"bold")).grid(column=0,row=1,padx=400,pady=(300,30))
 
-        self.input_materia_jogo = CTkOptionMenu(self, values=self.materias, font=("fixedsys",22,"bold"))
-        self.input_materia_jogo.grid(column=0,row=2,padx=400,pady=10)
+        self.input_materia_jogo = CTkOptionMenu(self, values=self.materias, font=("fixedsys",22,"bold"),command=self.mostrar_materia)
+        self.input_materia_jogo.grid(column=0,row=2,padx=(400,10),pady=10)
+
+        self.confirmar_materia = CTkButton(self,text="Confirmar Matéria", font=("courier new",14,"bold"), command=self.atualizar_materia_atual)
+        self.confirmar_materia.grid(column = 0, row = 3, padx=100, pady=10)
 
         self.btn_iniciar_jogo = CTkButton(master=self, text="Iniciar", font=("fixedsys",22,"bold"),width=300,height=100,command=lambda: self.controller.show_frame(Perguntas))
-        self.btn_iniciar_jogo.grid(column=0,row=3,padx=400,pady=10)
+        self.btn_iniciar_jogo.grid(column=0,row=4,padx=10,pady=10)
 
     
     def mostrar_materias(self):
@@ -457,10 +482,79 @@ class Materias(BaseFrame):
             print("Erro ao carregar materias")
 
     def mostrar_materia(self,materia):
-        print(f"Matéria escolhida: {materia}")
-        return materia
+        self.materia = materia
+        print(self.materia)
+
+
+    def atualizar_materia_atual(self):
+        self.banco.materia_atual(self.materia)
+        
+        
+
+class MateriasProfessor(BaseFrame):
+    def __init__(self, parent, controller):
+        super().__init__(parent, controller)
+        self.configure(width=1200, height=780, fg_color="#ffffff")
+        self.pack_propagate(0)
+        self.criar_tela()
+        self.mostrar_materias_perguntas()
     
-    
+    def criar_tela(self):
+        
+        
+
+        self.left_frame = CTkFrame(self, width=800, height=750, fg_color="#333", corner_radius=0)
+        self.left_frame.pack_propagate(0)
+        self.left_frame.pack(side="left", fill="both")
+
+        self.right_frame = CTkFrame(self,width=400, height=750, fg_color="#555", corner_radius=0)
+        self.right_frame.pack_propagate(0)
+        self.right_frame.pack(side="right", fill="both")
+
+        self.btn_cadastrar_materia = CTkButton(self.right_frame, text="Cadastrar matéria",width=200, fg_color="#E44982", command=self.adicionar_matéria)
+        self.btn_cadastrar_materia.pack()
+
+        self.texto_materia = CTkLabel(self.right_frame, text="Insira a nova matéria: ", text_color="#000")
+        self.texto_materia.pack(side="right",fill="both",padx=50,pady=2)
+
+        self.materia = CTkEntry(self.right_frame, width=150, height= 25, fg_color="#ffffff")
+        self.materia.pack(side="right", padx=10,pady=2)
+        
+        
+
+        scrollbar_y = ttk.Scrollbar(self.left_frame, orient="vertical")
+        scrollbar_y.pack(side="right", fill="y")
+
+        scrollbar_x = ttk.Scrollbar(self.left_frame, orient="horizontal")
+        scrollbar_x.pack(side="bottom", fill="x")
+
+        colunas = ("ID","Materia(s)", "Número de Perguntas")
+
+        self.tree = ttk.Treeview(
+            self.left_frame,
+            columns=colunas,
+            show="headings",
+            yscrollcommand=scrollbar_y.set,
+            xscrollcommand=scrollbar_x.set
+        )
+        self.tree.pack(fill="both", expand=True, padx=(40,40), pady=(40,10))
+
+        scrollbar_y.config(command=self.tree.yview)
+        scrollbar_x.config(command=self.tree.xview)
+
+        for col in colunas:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=150, anchor="center")
+
+    def mostrar_materias_perguntas(self):
+        for sigla, qtd in self.controller.banco.carregar_materias_perguntas():
+            self.tree.insert("", "end", values=(sigla, qtd))
+
+    def adicionar_matéria(self):
+        if self.materia.get() == "":
+            msgbox.showerror("Erro", "Digite alguma matéria para cadastro!")
+        else:
+            self.controller.banco.cadastrar_materia(self.materia.get())
 
 
 class MenuProfessor(BaseFrame):
@@ -484,7 +578,7 @@ class MenuProfessor(BaseFrame):
 
         CTkButton(self.left_frame, text="Jogar", fg_color="#601E88", hover_color="#E44982", 
                   font=("Arial Bold", 14), text_color="#ffffff", width=348, height=60, 
-                  command=lambda: self.controller.show_frame(Materias)).pack(anchor="w", pady=(400, 0), padx=(25, 0)) 
+                  command=lambda: self.controller.show_frame(MateriasJogo)).pack(anchor="w", pady=(400, 0), padx=(25, 0)) 
         CTkButton(self.left_frame, text="Perguntas", fg_color="#601E88", hover_color="#E44982", 
                   font=("Arial Bold", 14), text_color="#ffffff", width=348, height=60, 
                   command=lambda: self.controller.show_frame(PerguntasProfessor)).pack(anchor="w", pady=(20, 0), padx=(25, 0))
@@ -530,6 +624,7 @@ class Perguntas(BaseFrame):
         super().__init__(parent, controller)
         self.configure(width=1200, height=780, fg_color="#ffffff")
         self.pack_propagate(0)
+        self.materia_atual = self.controller.banco.mostrar_materia_atual()[0][0]
         self.perguntas = self.obter_perguntas()
         self.indice_pergunta = 0
         self.ajuda_dica_usada = False
@@ -542,11 +637,13 @@ class Perguntas(BaseFrame):
         self.materia_selecionada = None
         self.criar_tela()
 
+        print(self.materia_atual)
+
     def obter_perguntas(self):
         conexao = sqlite3.connect("PI.db")
         cursor = conexao.cursor()
         
-        cursor.execute("SELECT dificuldade, pergunta, altA, altB, altC, altD, correta, dica FROM Pergunta")
+        cursor.execute("SELECT dificuldade, pergunta, altA, altB, altC, altD, correta, dica FROM Pergunta WHERE materia = ?", (self.materia_atual,))
 
         self.perguntas_faceis = []
         self.perguntas_medias = []
@@ -748,24 +845,6 @@ class PerguntasProfessor(BaseFrame):
         
 
     def criar_tela(self):
-
-        self.top_frame = CTkFrame(self, width=1200, height=30, fg_color="#ffffff")
-        self.top_frame.pack_propagate(0)
-        self.top_frame.pack(side="top", fill="x", padx=10, pady=5)
-        
-        # Botão Voltar
-        CTkButton(self.top_frame, text="Voltar", fg_color="#601E88", hover_color="#E44982",
-                 font=("Arial Bold", 12), width=100, height=30,
-                 command=lambda: self.controller.show_frame(MenuProfessor)).pack(side="left", padx=10)
-        
-        self.texto_materia = CTkLabel(self.top_frame, text="Insira a nova matéria: ", text_color="#000")
-        self.texto_materia.pack(side="right",fill="both",padx=50,pady=2)
-
-        self.materia = CTkEntry(self.top_frame, width=150, height= 25, fg_color="#ffffff")
-        self.materia.pack(side="right", fill="both", padx=10,pady=2)
-        
-        self.btn_cadastrar_materia = CTkButton(self.top_frame, text="Cadastrar matéria", fg_color="#E44982")
-        self.btn_cadastrar_materia.pack(side="right",fill="both",padx=10, pady=2)
         
         self.left_frame = CTkFrame(self, width=550, height=780, fg_color="#707070", corner_radius=0)
         self.left_frame.pack_propagate(0)
@@ -930,6 +1009,9 @@ class PerguntasProfessor(BaseFrame):
             self.mostrar_dados()
         except Exception as e:
             msgbox.showerror("Erro", f"Erro ao cadastrar pergunta:\n{e}")
+
+    
+
 
 if __name__ == "__main__":
     app = App()
