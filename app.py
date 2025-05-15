@@ -13,13 +13,14 @@ class BancoDeDados:
         self.conexao = sqlite3.connect(self.dados_conexao)
         self.cursor = self.conexao.cursor()
         print('Conectado com sucesso')
+        
 
     def login_usuario(self, email, senha):
         self.cursor.execute('SELECT * FROM Usuario WHERE email = ? AND senha = ?', (email, senha))
         return self.cursor.fetchall()
 
-    def cadastrar_usuario(self, nome, email, senha):
-        self.cursor.execute('INSERT INTO Usuario (nome,email,senha) VALUES (?,?,?)', (nome, email, senha))
+    def cadastrar_usuario(self, nome, email, senha, turma, professor):
+        self.cursor.execute('INSERT INTO Usuario (nome,email,senha,turma,professor) VALUES (?,?,?,?,?)', (nome, email, senha,turma,professor))
         self.conexao.commit()
         print("Cadastro Realizado com sucesso!")
     
@@ -29,6 +30,10 @@ class BancoDeDados:
     
     def carregar_jogadores(self):
         self.cursor.execute("SELECT id, nome, email, turma, professor FROM Usuario")
+        return self.cursor.fetchall()
+    
+    def carregar_dados_jogador(self,email):
+        self.cursor.execute("SELECT nome,email,senha,turma,professor FROM Usuario WHERE email = ?", (email,))
         return self.cursor.fetchall()
 
     def carregar_materias(self):
@@ -134,6 +139,7 @@ class Login(BaseFrame):
         super().__init__(parent, controller)
         self.controller = controller
         self.configure(fg_color="#1E1E1E")
+        self.dados_jogador = []
 
         # Tornar layout base responsivo
         self.grid_rowconfigure(0, weight=1)
@@ -208,7 +214,7 @@ class Login(BaseFrame):
 
         # Botão de mostrar/ocultar senha 
         self.btn_ocultar_senha = CTkButton(senha_frame, image=self.closed_eye, height=35,
-                                   width=35, text="", fg_color="#3B5055", hover_color="#2F3E43", corner_radius=8, command=self.toggle_senha)
+                                   width=35, text="", fg_color="#3B5055", hover_color="#2F3E43", corner_radius=8, command=self.toggle_senha,border_color="#B5C6D0", border_width=2)
         self.btn_ocultar_senha.grid(row=0, column=1, padx=(5, 0))
 
         # Botão login
@@ -247,7 +253,11 @@ class Login(BaseFrame):
 
         if valores:
             msgbox.showinfo("Sucesso", "Login bem-sucedido!")
-            self.controller.show_frame(MenuProfessor)
+            self.dados_jogador = self.controller.banco.carregar_dados_jogador(email)[0][4]
+            if self.dados_jogador == "S":
+                self.controller.show_frame(MenuProfessor)
+            else :
+                self.controller.show_frame(Menu)
         else:
             msgbox.showerror("Erro", "Email ou senha incorretos.")
 
@@ -266,18 +276,23 @@ class Cadastro(BaseFrame):
         self.original_img = Image.open("imagens/fundo-verde-balatro-vertical.png")
         self.side_label = None
         self.current_img = None
+        self.professor = "N"
 
         self.criar_tela()
 
     def criar_tela(self):
-        name_icon = CTkImage(dark_image=Image.open("imagens/user.png"),
-                             light_image=Image.open("imagens/user.png"), size=(17, 17))
-        email_icon = CTkImage(dark_image=Image.open("imagens/email-icon.png"),
-                              light_image=Image.open("imagens/email-icon.png"), size=(20, 20))
-        password_icon = CTkImage(dark_image=Image.open("imagens/password-icon.png"),
-                                 light_image=Image.open("imagens/password-icon.png"), size=(17, 17))
-        signin_icon = CTkImage(dark_image=Image.open("imagens/signin.png"),
-                               light_image=Image.open("imagens/signin.png"), size=(17, 17))
+        name_icon = CTkImage(dark_image=Image.open("imagens/usuario.png"),
+                             light_image=Image.open("imagens/usuario.png"), size=(17, 17))
+        email_icon = CTkImage(dark_image=Image.open("imagens/email.png"),
+                              light_image=Image.open("imagens/email.png"), size=(20, 20))
+        password_icon = CTkImage(dark_image=Image.open("imagens/cadeado.png"),
+                                 light_image=Image.open("imagens/cadeado.png"), size=(17, 17))
+        signin_icon = CTkImage(dark_image=Image.open("imagens/login.png"),
+                               light_image=Image.open("imagens/login.png"), size=(17, 17))
+        self.eye_icon = CTkImage(dark_image=Image.open("imagens/olho-senha.png"),
+                               light_image=Image.open("imagens/olho-senha.png"), size=(17, 17))
+        self.closed_eye = CTkImage(dark_image=Image.open("imagens/ocultar-senha.png"),
+                               light_image=Image.open("imagens/ocultar-senha.png"), size=(17, 17))
 
         # Frame da imagem à esquerda
         self.left_frame = CTkFrame(self, fg_color="#1E1E1E")
@@ -300,47 +315,67 @@ class Cadastro(BaseFrame):
 
         # Título
         CTkLabel(self.right_frame, text="Faça seu Cadastro", text_color="#ffffff",
-                 font=("fixedsys", 28, "bold")).grid(row=0, column=0, sticky="w", pady=(50, 5))
+                 font=("courier new", 28, "bold")).grid(row=0, column=0, sticky="w", pady=(40, 5))
         CTkLabel(self.right_frame, text="Crie sua conta", text_color="#ffffff",
-                 font=("fixedsys", 16,"bold")).grid(row=1, column=0, sticky="w", pady=(0, 20))
+                 font=("courier new", 16,"bold")).grid(row=1, column=0, sticky="w", pady=(0, 20))
 
         # Nome
         CTkLabel(self.right_frame, text="  Nome Completo:", text_color="#ffffff", image=name_icon,
-                 compound="left", font=("fixedsys", 14, "bold")).grid(row=2, column=0, sticky="w", pady=(0, 5))
+                 compound="left", font=("courier new", 14, "bold")).grid(row=2, column=0, sticky="w", pady=(0, 5))
         self.nome_completo = CTkEntry(self.right_frame, fg_color="#3B5055", border_color="#B5C6D0",
-                                      border_width=2, text_color="#ffffff", height=35,font=("fixedsys",14))
+                                      border_width=2, text_color="#ffffff", height=35,font=("courier new",14))
         self.nome_completo.grid(row=3, column=0, sticky="ew", pady=(0, 20))
 
         # Turma
         CTkLabel(self.right_frame, text="  Turma:", text_color="#ffffff", image=name_icon,
-                 compound="left", font=("fixedsys", 14, "bold")).grid(row=4, column=0, sticky="w", pady=(0, 5))
+                 compound="left", font=("courier new", 14, "bold")).grid(row=4, column=0, sticky="w", pady=(0, 5))
         self.turma = CTkEntry(self.right_frame, fg_color="#3B5055", border_color="#B5C6D0",
-                                      border_width=2, text_color="#ffffff", height=35,font=("fixedsys",14))
+                                      border_width=2, text_color="#ffffff", height=35,font=("courier new",14))
         self.turma.grid(row=5, column=0, sticky="ew", pady=(0, 20))
 
         # Email
         CTkLabel(self.right_frame, text="  Email:", text_color="#ffffff", image=email_icon,
-                 compound="left", font=("fixedsys", 14, "bold")).grid(row=6, column=0, sticky="w", pady=(0, 5))
+                 compound="left", font=("courier new", 14, "bold")).grid(row=6, column=0, sticky="w", pady=(0, 5))
         self.email_cadastro = CTkEntry(self.right_frame, fg_color="#3B5055", border_color="#B5C6D0",
-                                       border_width=2, text_color="#ffffff", height=35,font=("fixedsys",14))
+                                       border_width=2, text_color="#ffffff", height=35,font=("courier new",14))
         self.email_cadastro.grid(row=7, column=0, sticky="ew", pady=(0, 20))
 
+        #Professor?
+        CTkLabel(self.right_frame, text="Professor?", text_color="#ffffff", font= ("courier new",14,"bold")).grid(row=8, column =0, sticky="w", pady=(0,5))
+
+        self.professor = CTkOptionMenu(self.right_frame, values=["Não","Sim"], text_color="#ffffff", fg_color="#3B5055", height=35,button_color="#3B5055",button_hover_color="#3B5055", font=("courier new",14,"bold"), command=self.flag_professor, dropdown_fg_color="#3B5055", dropdown_font=("courier new",14,"bold"), dropdown_text_color="#ffffff")
+        self.professor.set("Selecione uma opção...")
+        self.professor.grid(row = 9, column = 0, sticky = "ew", pady=(0,20))
+        
         # Senha
         CTkLabel(self.right_frame, text="  Senha:", text_color="#ffffff", image=password_icon,
-                 compound="left", font=("fixedsys", 14, "bold")).grid(row=8, column=0, sticky="w", pady=(0, 5))
-        self.senha_cadastro = CTkEntry(self.right_frame, fg_color="#3B5055", border_color="#B5C6D0",
-                                       border_width=2, text_color="#ffffff", show="*", height=35, font=("fixedsys",14))
-        self.senha_cadastro.grid(row=9, column=0, sticky="ew", pady=(0, 30))
+                 compound="left", font=("courier new", 14, "bold")).grid(row=10, column=0, sticky="w", pady=(0, 5))
+        senha_frame = CTkFrame(self.right_frame, fg_color="transparent")
+        senha_frame.grid(row=11, column=0, sticky="ew", pady=(0, 30))
+        senha_frame.grid_columnconfigure(0, weight=1)
+
+        # Campo de senha 
+        self.senha_cadastro = CTkEntry(senha_frame, fg_color="#3B5055", border_color="#B5C6D0",
+                             border_width=2, text_color="#ffffff", show="*", height=35,
+                            corner_radius=8, font=("courier new", 14, "bold"))
+        self.senha_cadastro.grid(row=0, column=0, sticky="ew")
+
+        # Botão de mostrar/ocultar senha 
+        self.btn_ocultar_senha = CTkButton(senha_frame, image=self.closed_eye, height=35,
+                                   width=35, text="", fg_color="#3B5055", hover_color="#2F3E43", corner_radius=8, command=self.toggle_senha, border_color="#B5C6D0", border_width=2)
+        self.btn_ocultar_senha.grid(row=0, column=1, padx=(5, 0))
+
+        
 
         # Botão cadastrar
         CTkButton(self.right_frame, text="CADASTRAR", fg_color="#FF9700", hover_color="#c27402",
-                  font=("fixedsys", 22, "bold"), text_color="#ffffff", command=self.cadastrar_usuario, height=45, corner_radius=10).grid(
-            row=10, column=0, sticky="ew", pady=(0, 15))
+                  font=("courier new", 22, "bold"), text_color="#ffffff", command=self.cadastrar_usuario, height=45, corner_radius=10).grid(
+            row=12, column=0, sticky="ew", pady=(0, 15))
 
         # Botão login
         CTkButton(self.right_frame, text="Já tem conta? Faça login", fg_color="#D22D23", hover_color="#942019",
-                  font=("fixedsys", 14, "bold"), text_color="#ffffff", image=signin_icon,
-                  command=lambda: self.controller.show_frame(Login), height=45, corner_radius=10).grid(row=11, column=0, sticky="ew")
+                  font=("courier new", 14, "bold"), text_color="#ffffff", image=signin_icon,
+                  command=lambda: self.controller.show_frame(Login), height=45, corner_radius=10).grid(row=13, column=0, sticky="ew")
 
     def redimensionar_imagem_lateral(self, event=None):
         new_width = self.left_frame.winfo_width()
@@ -351,26 +386,44 @@ class Cadastro(BaseFrame):
             self.current_img = CTkImage(dark_image=resized_pil, light_image=resized_pil, size=(new_width, new_height))
             self.side_label.configure(image=self.current_img)
 
+    def toggle_senha(self):
+        if self.senha_login.cget("show") == "":
+            self.senha_login.configure(show="*")
+            self.btn_ocultar_senha.configure(image=self.closed_eye)
+        else:
+            self.senha_login.configure(show="")
+            self.btn_ocultar_senha.configure(image=self.eye_icon)
+
     def cadastrar_usuario(self):
         nome = self.nome_completo.get()
         email = self.email_cadastro.get()
         senha = self.senha_cadastro.get()
+        turma = self.turma.get()
+        professor = self.professor
 
-        if not nome or not email or not senha:
+        if not nome or not email or not senha or not professor:
             msgbox.showerror("Erro", "Todos os campos devem ser preenchidos!")
             return
 
         try:
-            self.controller.banco.cadastrar_usuario(nome, email, senha)
-            msgbox.showinfo("Sucesso", "Cadastro realizado com sucesso!")
+            self.controller.banco.cadastrar_usuario(nome, email, senha,turma, professor)
+            msgbox.showinfo("Sucesso", f"{nome}, {email}, {turma},{professor},{senha}")
             self.controller.show_frame(Login)
         except Exception as e:
             msgbox.showerror("Erro", f"Falha ao cadastrar: {str(e)}")
+
+    def flag_professor(self,professor):
+        if professor == "Sim":
+            self.professor = "S"
+        else:
+            self.professor = "N"
+            
 
 
 class CentralProfessor(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
+        self.controller = controller
         self.configure(width=1200, height=780, fg_color="#ffffff")
         self.pack_propagate(0)
         self.criar_tela()
@@ -384,6 +437,8 @@ class CentralProfessor(BaseFrame):
         CTkButton(self, width=200, height=300, text="Jogadores", fg_color="#999999", text_color="#ffffff",font=("fixedsys",22,"bold"), command=lambda: self.controller.show_frame(Jogadores)).grid(row = 1, column =1, padx = 25, pady=200 )
         CTkButton(self, width=200, height=300, text="Matérias", fg_color="#999999", text_color="#ffffff",font=("fixedsys",22,"bold"), command=lambda: self.controller.show_frame(MateriasProfessor)).grid(row = 1, column = 2, padx=25,pady=200)
         CTkButton(self, width=200, height=300, text="Instruções", fg_color="#999999", text_color="#ffffff", font=("fixedsys",22,"bold")).grid(row=1,column=3,padx=25,pady=200)
+
+
 
 class Jogadores(BaseFrame):
     def __init__(self, parent, controller):
