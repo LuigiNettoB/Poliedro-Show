@@ -3,6 +3,7 @@ from PIL import Image
 import sqlite3
 import tkinter as tk
 import random
+import time
 import tkinter.messagebox as msgbox
 import threading
 import tkinter.ttk as ttk
@@ -13,7 +14,117 @@ class BancoDeDados:
         self.conexao = sqlite3.connect(self.dados_conexao)
         self.cursor = self.conexao.cursor()
         print('Conectado com sucesso')
-        
+
+    def inserir_perguntas_geog(self):
+        try:
+            comandos = [
+                # FÁCEIS (F)
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual é o maior oceano do mundo?', 'Atlântico', 'Índico', 'Ártico', 'Pacífico', 'Pacífico', 'É o maior e mais profundo oceano.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual é o rio mais extenso do mundo?', 'Nilo', 'Amazonas', 'Yangtzé', 'Mississippi', 'Amazonas', 'Está na América do Sul.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual é o continente com mais países?', 'Ásia', 'África', 'Europa', 'América', 'África', 'Tem mais de 50 países.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual é a capital do Brasil?', 'São Paulo', 'Brasília', 'Rio de Janeiro', 'Salvador', 'Brasília', 'Foi inaugurada em 1960.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual é o país com maior população?', 'Índia', 'Estados Unidos', 'China', 'Indonésia', 'China', 'Está na Ásia.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual é o menor continente do mundo?', 'Europa', 'Austrália', 'Antártida', 'América do Sul', 'Austrália', 'É também um país.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual é o deserto mais seco do mundo?', 'Saara', 'Atacama', 'Kalahari', 'Gobi', 'Atacama', 'Fica na América do Sul.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual é a capital da França?', 'Paris', 'Londres', 'Berlim', 'Roma', 'Paris', 'É conhecida como cidade luz.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual é o maior país do mundo em área territorial?', 'Canadá', 'Estados Unidos', 'China', 'Rússia', 'Rússia', 'Está na Europa e Ásia.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual é a montanha mais alta do mundo?', 'Everest', 'K2', 'Makalu', 'Annapurna', 'Everest', 'Fica no Himalaia.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual oceano banha o litoral leste do Brasil?', 'Atlântico', 'Índico', 'Pacífico', 'Ártico', 'Atlântico', 'É o segundo maior oceano.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual país tem o formato de uma bota?', 'França', 'Itália', 'Grécia', 'Alemanha', 'Itália', 'Fica no sul da Europa.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'O que é uma ilha?', 'Montanha', 'Área deserta', 'Área cercada por água', 'Floresta', 'Área cercada por água', 'É cercada por água por todos os lados.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual é a capital da Argentina?', 'Lima', 'Santiago', 'Buenos Aires', 'Montevidéu', 'Buenos Aires', 'Fica às margens do Rio da Prata.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('F', 'Qual país é conhecido por suas pirâmides?', 'Grécia', 'Índia', 'Egito', 'México', 'Egito', 'Fica no nordeste da África.', 'GEOG')''',
+
+                # MÉDIAS (M)
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Qual é o maior arquipélago do mundo?', 'Filipinas', 'Indonésia', 'Maldivas', 'Japão', 'Indonésia', 'É um país asiático com milhares de ilhas.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Onde fica a nascente do Rio Amazonas?', 'Brasil', 'Colômbia', 'Peru', 'Venezuela', 'Peru', 'Está nos Andes peruanos.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Qual é o ponto mais alto do Brasil?', 'Pico da Neblina', 'Pico das Agulhas Negras', 'Pico Paraná', 'Monte Roraima', 'Pico da Neblina', 'Está no estado do Amazonas.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Qual é o maior deserto do mundo em extensão?', 'Saara', 'Atacama', 'Gobi', 'Antártida', 'Antártida', 'É gelado e não arenoso.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Qual bioma domina o centro-oeste do Brasil?', 'Mata Atlântica', 'Pantanal', 'Cerrado', 'Caatinga', 'Cerrado', 'É típico de clima tropical sazonal.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Quantos fusos horários existem no Brasil atualmente?', '3', '4', '5', '2', '4', 'Houve uma mudança recente por decreto.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Qual é a capital mais ao sul do Brasil?', 'Curitiba', 'Florianópolis', 'Porto Alegre', 'Campo Grande', 'Porto Alegre', 'Fica no Rio Grande do Sul.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'O que é uma foz deltaica?', 'Saída subterrânea do rio', 'Ramificação de canais na foz', 'Encontro de dois rios', 'Foz em desnível', 'Ramificação de canais na foz', 'Forma um leque na foz do rio.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Qual é o principal rio da região Sudeste do Brasil?', 'Rio São Francisco', 'Rio Doce', 'Rio Paraná', 'Rio Tietê', 'Rio Paraná', 'Passa por São Paulo e deságua no Prata.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Qual país tem fronteira com todos os outros da América do Sul, exceto Chile e Equador?', 'Peru', 'Brasil', 'Colômbia', 'Argentina', 'Brasil', 'É o maior da América do Sul.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'O que é uma cordilheira?', 'Lago extenso', 'Planície', 'Conjunto de montanhas', 'Deserto', 'Conjunto de montanhas', 'Forma grandes cadeias montanhosas.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Qual é a principal corrente marítima fria que afeta o clima do Chile?', 'El Niño', 'Corrente de Humboldt', 'Golfo do México', 'Corrente de Benguela', 'Corrente de Humboldt', 'Vem do Pacífico Sul.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'O que significa latitude?', 'Distância em metros', 'Altura da montanha', 'Distância ao norte ou sul do Equador', 'Distância ao leste', 'Distância ao norte ou sul do Equador', 'Usada para localizar pontos na Terra.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Qual o nome da linha imaginária que divide a Terra ao meio?', 'Trópico de Câncer', 'Meridiano de Greenwich', 'Equador', 'Trópico de Capricórnio', 'Equador', 'Divide hemisfério norte e sul.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('M', 'Quais países fazem parte do Magreb?', 'Egito, Etiópia, Sudão', 'Marrocos, Argélia, Tunísia', 'África do Sul, Namíbia, Angola', 'Níger, Chade, Mali', 'Marrocos, Argélia, Tunísia', 'Estão no norte da África.', 'GEOG')''',
+
+                # DIFÍCEIS (D)
+                    # DIFÍCEIS (D)
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'O que é um estuário?', 'Área montanhosa', 'Deserto costeiro', 'Foz em forma de funil de rio', 'Planície tropical', 'Foz em forma de funil de rio', 'Forma-se onde há marés fortes.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'Qual cidade é atravessada pela linha do Equador no Brasil?', 'Belém', 'Boa Vista', 'Macapá', 'Palmas', 'Macapá', 'Está no estado do Amapá.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'O que é a tectônica de placas?', 'Teoria sobre a origem do universo', 'Movimento dos ventos', 'Movimento das placas litosféricas', 'Ciclo da água', 'Movimento das placas litosféricas', 'Explica terremotos e vulcões.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'Qual país possui mais vulcões ativos no mundo?', 'Indonésia', 'Japão', 'Itália', 'Chile', 'Indonésia', 'É um arquipélago no Pacífico.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'Qual cidade está localizada em dois continentes?', 'Moscou', 'Istambul', 'Tóquio', 'Cairo', 'Istambul', 'Fica entre Europa e Ásia.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'O que são dorsais oceânicas?', 'Cordilheiras submarinas', 'Rios profundos', 'Fendas tectônicas', 'Corais gigantes', 'Cordilheiras submarinas', 'Formadas por placas divergentes.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'Qual é o maior aquífero do mundo em volume de água?', 'Guarani', 'Alter do Chão', 'Ogallala', 'Sáhara', 'Alter do Chão', 'Está localizado na região amazônica.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'Qual é a capital mais alta do mundo?', 'Quito', 'La Paz', 'Bogotá', 'Kathmandu', 'La Paz', 'Fica na Bolívia, nos Andes.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'Qual país tem o maior número de fronteiras com outros países?', 'Rússia', 'Brasil', 'Alemanha', 'China', 'China', 'Tem fronteira com 14 países.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'O que é o Anel de Fogo do Pacífico?', 'Corrente oceânica', 'Região de ciclones', 'Área de intensa atividade vulcânica e sísmica', 'Zona de clima árido', 'Área de intensa atividade vulcânica e sísmica', 'Cerca todo o oceano Pacífico.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'Qual fenômeno natural causa tsunamis?', 'Ciclones', 'Erupções vulcânicas', 'Terremotos submarinos', 'Erosão costeira', 'Terremotos submarinos', 'Acontece sob o oceano.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'Qual é o maior delta fluvial do mundo?', 'Delta do Mekong', 'Delta do Nilo', 'Delta do Amazonas', 'Delta do Ganges', 'Delta do Ganges', 'Fica na Índia e Bangladesh.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'O que é um talude continental?', 'Montanha oceânica', 'Zona de transição entre plataforma e fundo oceânico', 'Depressão tectônica', 'Plataforma de coral', 'Zona de transição entre plataforma e fundo oceânico', 'Faz parte da margem continental.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'O que caracteriza o clima mediterrâneo?', 'Chuvas o ano todo', 'Verões secos e invernos chuvosos', 'Invernos rigorosos', 'Alta umidade', 'Verões secos e invernos chuvosos', 'Típico do sul da Europa.', 'GEOG')''',
+                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
+                VALUES ('D', 'Qual o nome da região do Sahel?', 'Floresta equatorial', 'Zona de transição entre deserto e savana', 'Área de monções', 'Pântano africano', 'Zona de transição entre deserto e savana', 'Fica ao sul do Saara.', 'GEOG')'''
+
+            ]
+            for sql in comandos:
+                self.cursor.execute(sql)
+
+            self.conexao.commit()
+            print("Todas as perguntas foram inseridas com sucesso!")
+
+        except Exception as e:
+            print(f"Erro ao inserir perguntas: {e}")
+   
 
     def login_usuario(self, email, senha):
         self.cursor.execute('SELECT * FROM Usuario WHERE email = ? AND senha = ?', (email, senha))
@@ -93,6 +204,14 @@ class App(CTk):
         self.title("Show Do Milhão")
         self.geometry("1200x780")
         self.center_window(1200, 780)
+
+        self.usuario_logado = {
+            'nome': '',
+            'email': '',
+            'senha': '',
+            'turma': '',
+            'professor': 'N'  # Valor padrão
+        }
         
         # Container principal para os frames
         self.container = CTkFrame(self)
@@ -140,6 +259,7 @@ class Login(BaseFrame):
         self.controller = controller
         self.configure(fg_color="#1E1E1E")
         self.dados_jogador = []
+
 
         # Tornar layout base responsivo
         self.grid_rowconfigure(0, weight=1)
@@ -253,14 +373,27 @@ class Login(BaseFrame):
 
         if valores:
             msgbox.showinfo("Sucesso", "Login bem-sucedido!")
-            self.dados_jogador = self.controller.banco.carregar_dados_jogador(email)[0][4]
-            if self.dados_jogador == "S":
+            dados = self.controller.banco.carregar_dados_jogador(email)[0]
+            
+            # Preenche os dados do usuário de forma estruturada
+            self.controller.usuario_logado = {
+                'nome': dados[0],
+                'email': dados[1],
+                'senha': dados[2],
+                'turma': dados[3],
+                'professor': dados[4]
+            }
+            
+            if self.controller.usuario_logado['professor'] == "S":
                 self.controller.show_frame(MenuProfessor)
-            else :
+            else:
                 self.controller.show_frame(Menu)
         else:
             msgbox.showerror("Erro", "Email ou senha incorretos.")
-
+    
+    
+    #def cadastrar_geog(self):
+        #self.controller.banco.inserir_perguntas_geog()
 
 
 class Cadastro(BaseFrame):
@@ -427,6 +560,7 @@ class CentralProfessor(BaseFrame):
         self.configure(width=1200, height=780, fg_color="#ffffff")
         self.pack_propagate(0)
         self.criar_tela()
+        
         
 
     def criar_tela(self):
@@ -634,10 +768,7 @@ class MenuProfessor(BaseFrame):
         CTkButton(self.left_frame, text="Jogar", fg_color="#601E88", hover_color="#E44982", 
                   font=("Arial Bold", 14), text_color="#ffffff", width=348, height=60, 
                   command=lambda: self.controller.show_frame(MateriasJogo)).pack(anchor="w", pady=(400, 0), padx=(25, 0)) 
-        CTkButton(self.left_frame, text="Perguntas", fg_color="#601E88", hover_color="#E44982", 
-                  font=("Arial Bold", 14), text_color="#ffffff", width=348, height=60, 
-                  command=lambda: self.controller.show_frame(PerguntasProfessor)).pack(anchor="w", pady=(20, 0), padx=(25, 0))
-        CTkButton(self.left_frame, text="Opções", fg_color="#601E88", hover_color="#E44982", 
+        CTkButton(self.left_frame, text="Central Professor", fg_color="#601E88", hover_color="#E44982", 
                   font=("Arial Bold", 14), text_color="#ffffff", width=348, height=60, command=lambda: self.controller.show_frame(CentralProfessor)).pack(anchor="w", pady=(20, 0), padx=(25, 0))
         CTkButton(self.left_frame, text="Sair", fg_color="#601E88", hover_color="#E44982",
                   font=("Arial Bold", 14), text_color="#ffffff", width=348, height=60, 
@@ -690,6 +821,7 @@ class Perguntas(BaseFrame):
         self.pontuacao = 0  # Inicia com 0 pontos
         self.checkpoint_atingido = False  # Flag para verificar se atingiu checkpoint
         self.materia_selecionada = None
+        self.tempo_inicio = time.time()
         self.criar_tela()
 
         print(self.materia_atual)
@@ -725,7 +857,7 @@ class Perguntas(BaseFrame):
         random.shuffle(self.perguntas_medias)
         random.shuffle(self.perguntas_dificeis)
 
-        self.perguntas = self.perguntas_faceis + self.perguntas_medias + self.perguntas_dificeis
+        self.perguntas = self.perguntas_faceis[0:1] + self.perguntas_medias[0:1] + self.perguntas_dificeis[0:1]
         
         cursor.close()
         conexao.close()
@@ -771,7 +903,7 @@ class Perguntas(BaseFrame):
         self.botao_encerrar = CTkButton(self.right_frame, text="Encerrar Jogo", 
                                       font=("Arial Bold", 18), fg_color="#E44982", 
                                       text_color="#ffffff", width=250, height=100, 
-                                      command=lambda: self.controller.show_frame(MenuProfessor))
+                                      command=self.mostrar_janela_fim_jogo)
         self.botao_encerrar.pack(padx=(25,0), pady=(30,0))
 
         
@@ -793,6 +925,7 @@ class Perguntas(BaseFrame):
         self.game_over_points.pack(pady=(0, 50))
         
         self.carregar_pergunta()
+
     
     def carregar_pergunta(self):
         # Esconde a tela de game over se estiver visível
@@ -809,12 +942,10 @@ class Perguntas(BaseFrame):
             for i in range(4):
                 self.botoes_alternativas[i].configure(text=alternativas[i], fg_color="#601E88", state="normal")
             
-            self.botao_ajuda_dica.configure(state="normal", fg_color="#601E88")
-            self.botao_ajuda_50.configure(state="normal", fg_color="#601E88")
-            self.botao_ajuda_pular.configure(state="normal", fg_color="#601E88")
+
             self.label_feedback.configure(text="")
         else:
-            self.texto_pergunta.configure(text=f"Quiz concluído! Pontuação final: {self.pontuacao}")
+            self.mostrar_janela_jogo_concluido()
             for botao in self.botoes_alternativas:
                 botao.pack_forget()
     
@@ -881,8 +1012,93 @@ class Perguntas(BaseFrame):
                 self.botao_ajuda_50.configure(state="disabled")
                 self.botao_ajuda_pular.configure(state="disabled")
                 
-                self.game_over_points.configure(text=f"Pontuação final: {self.pontuacao}")
-                self.game_over_frame.pack(anchor="w", padx=(25), pady=(50))
+                self.mostrar_janela_fim_jogo()
+
+    
+    def mostrar_janela_fim_jogo(self):
+        janela = CTkToplevel(self)
+        janela.title("Fim de Jogo")
+        janela.geometry("400x250")
+        janela.grab_set()
+        
+        # Centraliza a janela imediatamente após criação
+        screen_width = janela.winfo_screenwidth()
+        screen_height = janela.winfo_screenheight()
+        x = (screen_width - 400) // 2
+        y = (screen_height - 250) // 2
+        janela.geometry(f"400x250+{x}+{y}")
+
+        CTkLabel(janela, text="Você perdeu!", font=("Arial Bold", 22), text_color="#E44982").pack(pady=20)
+        CTkLabel(janela, text=f"Pontuação final: {self.pontuacao}", font=("Arial", 18)).pack(pady=10)
+
+        def voltar_menu():
+            janela.destroy()
+            self.reiniciar_jogo()
+            self.controller.show_frame(MenuProfessor)
+
+        def recomeçar_jogo():
+            janela.destroy()
+            self.reiniciar_jogo()
+
+
+        CTkButton(janela, text="Voltar ao Menu", font=("Arial Bold", 16), fg_color="#888888", 
+                command=voltar_menu, width=200).pack(pady=10)
+
+        CTkButton(janela, text="Recomeçar Jogo", font=("Arial Bold", 16), fg_color="#601E88", 
+                command=recomeçar_jogo, width=200).pack(pady=10)
+        
+    def reiniciar_jogo(self):
+        self.perguntas = self.obter_perguntas()
+        self.indice_pergunta = 0
+        self.ajuda_dica_usada = False
+        self.ajuda_50_usada = False
+        self.ajuda_pular_usada = False
+        self.i_pontos = 0
+        self.pontuacao = 0
+        self.checkpoint_atingido = False
+
+        for botao in self.botoes_alternativas:
+            botao.pack(anchor="w", pady=(20, 0), padx=(25, 0))
+
+        self.label_pontuacao.configure(text="Pontuação: 0")
+        self.carregar_pergunta()
+
+    def mostrar_janela_jogo_concluido(self):
+        janela = CTkToplevel(self)
+        janela.title("Fim de Jogo")
+        janela.geometry("400x250")
+        janela.grab_set()
+        
+        # Centraliza a janela imediatamente após criação
+        screen_width = janela.winfo_screenwidth()
+        screen_height = janela.winfo_screenheight()
+        x = (screen_width - 400) // 2
+        y = (screen_height - 250) // 2
+        janela.geometry(f"400x250+{x}+{y}")
+
+        CTkLabel(janela, text="Você Ganhouu!", font=("Arial Bold", 22), text_color="#E44982").pack(pady=20)
+        CTkLabel(janela, text=f"Pontuação final: {self.pontuacao}", font=("Arial", 18)).pack(pady=10)
+
+        def voltar_menu():
+            janela.destroy()
+            self.reiniciar_jogo()
+            self.controller.show_frame(MenuProfessor)
+
+        def recomeçar_jogo():
+            janela.destroy()
+            self.reiniciar_jogo()
+
+
+        CTkButton(janela, text="Voltar ao Menu", font=("Arial Bold", 16), fg_color="#888888", 
+                command=voltar_menu, width=200).pack(pady=10)
+
+        CTkButton(janela, text="Recomeçar Jogo", font=("Arial Bold", 16), fg_color="#601E88", 
+                command=recomeçar_jogo, width=200).pack(pady=10)
+
+
+
+
+
 
 class PerguntasProfessor(BaseFrame):
     def __init__(self, parent, controller):
