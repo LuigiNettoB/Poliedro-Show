@@ -165,7 +165,6 @@ class BancoDeDados:
         self.conexao.commit()
 
     def cadastrar_pergunta(self, pergunta, alt_a, alt_b, alt_c, alt_d, dica, dificuldade, correta,materia):
-        def inserir_no_banco():
             try:
                 self.cursor.execute('''
                     INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) 
@@ -176,18 +175,15 @@ class BancoDeDados:
             except Exception as e:
                 print(f"Erro: {e}")
 
-        threading.Thread(target=inserir_no_banco, daemon=True).start()
-
     def deletar_pergunta(self, id):
-        def deletar_no_banco():
-            try:
-                self.cursor.execute('DELETE FROM Pergunta WHERE id = ?', (id,))
-                self.conexao.commit()
-                print("Deletado com sucesso")
-            except Exception as e:
-                print(f"Erro: {e}")
+        try:
+            self.cursor.execute('DELETE FROM Pergunta WHERE id = ?', (id,))
+            self.conexao.commit()
+            print("Deletado com sucesso")
+        except Exception as e:
+            print(f"Erro: {e}")
 
-        threading.Thread(target=deletar_no_banco, daemon=True).start()
+
 
     def materia_atual(self,materia):
         self.cursor.execute("UPDATE MateriaAtual SET materia = ? WHERE id = 1", (materia,))
@@ -520,11 +516,11 @@ class Cadastro(BaseFrame):
             self.side_label.configure(image=self.current_img)
 
     def toggle_senha(self):
-        if self.senha_login.cget("show") == "":
-            self.senha_login.configure(show="*")
+        if self.senha_cadastro.cget("show") == "":
+            self.senha_cadastro.configure(show="*")
             self.btn_ocultar_senha.configure(image=self.closed_eye)
         else:
-            self.senha_login.configure(show="")
+            self.senha_cadastro.configure(show="")
             self.btn_ocultar_senha.configure(image=self.eye_icon)
 
     def cadastrar_usuario(self):
@@ -1096,10 +1092,6 @@ class Perguntas(BaseFrame):
                 command=recomeçar_jogo, width=200).pack(pady=10)
 
 
-
-
-
-
 class PerguntasProfessor(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
@@ -1253,6 +1245,7 @@ class PerguntasProfessor(BaseFrame):
         alt_c = self.input_alt_c.get()
         alt_d = self.input_alt_d.get()
         dica = self.input_dica.get()
+        
         
         if not all([pergunta, alt_a, alt_b, alt_c, alt_d, dica]) or self.dificuldade == " " or self.correta == " " or self.materia == " ":
             msgbox.showerror("Erro", "Todos os campos devem ser preenchidos!")
