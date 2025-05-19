@@ -1,12 +1,14 @@
 from customtkinter import *
-from PIL import Image
+from customtkinter import CTkImage
+from PIL import Image, ImageTk
+from PIL.Image import Resampling
 import sqlite3
 import tkinter as tk
 import random
 import time
 import tkinter.messagebox as msgbox
-import threading
 import tkinter.ttk as ttk
+
 
 class BancoDeDados:
     def __init__(self, db_file):
@@ -549,24 +551,51 @@ class Cadastro(BaseFrame):
             
 
 
+
 class CentralProfessor(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         self.controller = controller
-        self.configure(width=1200, height=780, fg_color="#ffffff")
-        self.pack_propagate(0)
-        self.criar_tela()
-        
-        
+        self.configure(width=1200, height=780)
 
-    def criar_tela(self):
+        # Configura o grid principal da tela
+        self.grid_rowconfigure((0, 2), weight=1)  # Espaço acima e abaixo dos botões
+        self.grid_rowconfigure(1, weight=3)       # Linha dos botões
+        self.grid_columnconfigure((0, 1, 2, 3), weight=1)  # 4 colunas para os botões
 
-        CTkButton(self, height=35, width=70, text="Voltar", fg_color="#E44982", text_color="#ffffff", command=lambda: self.controller.show_frame(MenuProfessor)).grid(row = 0, column = 0, padx = (10,0), pady = 10)
+        # Carrega e exibe a imagem de fundo
+        self.original_image = Image.open("imagens/fundo-verde-balatro-horizontal.png")
+        self.background_image = None
+        self.bg_label = CTkLabel(self, text="")
+        self.bg_label.place(relx=0, rely=0, relwidth=1, relheight=1)
+        self.bind("<Configure>", self.redimensionar_imagem)
 
-        CTkButton(self, width=200, height=300, text="Perguntas", fg_color="#999999", text_color="#ffffff",font=("fixedsys",22,"bold"), command=lambda: self.controller.show_frame(PerguntasProfessor)).grid(row = 1, column = 0, padx = (120,25), pady = 200)
-        CTkButton(self, width=200, height=300, text="Jogadores", fg_color="#999999", text_color="#ffffff",font=("fixedsys",22,"bold"), command=lambda: self.controller.show_frame(Jogadores)).grid(row = 1, column =1, padx = 25, pady=200 )
-        CTkButton(self, width=200, height=300, text="Matérias", fg_color="#999999", text_color="#ffffff",font=("fixedsys",22,"bold"), command=lambda: self.controller.show_frame(MateriasProfessor)).grid(row = 1, column = 2, padx=25,pady=200)
-        CTkButton(self, width=200, height=300, text="Instruções", fg_color="#999999", text_color="#ffffff", font=("fixedsys",22,"bold")).grid(row=1,column=3,padx=25,pady=200)
+        # Botão Voltar no canto superior
+        CTkButton(self, height=35, width=70, text="<<<<", fg_color="#D22D23",hover_color="#942019",bg_color="#245d4a", text_color="#ffffff",border_color="#DB453D", border_width=3,
+                  command=lambda: self.controller.show_frame(MenuProfessor), font=("courier new",18,"bold")).place(x=30, y=30)
+
+        # Botões principais diretamente na grid do BaseFrame
+        CTkButton(self, height=300, width=200, text="PERGUNTAS", fg_color="#999999",
+                  text_color="#ffffff", font=("courier new",22,"bold"),
+                  command=lambda: self.controller.show_frame(PerguntasProfessor), bg_color="#245d4a", corner_radius=10).grid(row=1, column=0, padx=15, pady=10)
+
+        CTkButton(self, height=300, width=200, text="JOGADORES", fg_color="#999999",
+                  text_color="#ffffff", font=("courier new",22,"bold"),
+                  command=lambda: self.controller.show_frame(Jogadores), bg_color="#245d4a", corner_radius=10).grid(row=1, column=1, padx=15, pady=10)
+
+        CTkButton(self, height=300, width=200, text="DISCIPLINAS", fg_color="#999999",
+                  text_color="#ffffff", font=("courier new",22,"bold"),
+                  command=lambda: self.controller.show_frame(MateriasProfessor), bg_color="#245d4a", corner_radius=10).grid(row=1, column=2, padx=15, pady=10)
+
+        CTkButton(self, height=300, width=200, text="INSTRUÇÕES", fg_color="#999999",
+                  text_color="#ffffff", font=("courier new",22,"bold"), bg_color="#245d4a", corner_radius=10).grid(row=1, column=3, padx=15, pady=10)
+
+    def redimensionar_imagem(self, event):
+        nova_img = self.original_image.resize((event.width, event.height), Resampling.LANCZOS)
+        self.background_image = CTkImage(light_image=nova_img, size=(event.width, event.height))
+        self.bg_label.configure(image=self.background_image)
+
+
 
 
 
@@ -745,61 +774,154 @@ class MateriasProfessor(BaseFrame):
 class MenuProfessor(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
-        self.configure(width=1200, height=780, fg_color="#ffffff")
-        self.pack_propagate(0)
+        self.configure(fg_color="#1E1E1E")
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=7)
+
+        self.original_img = Image.open("imagens/fundo-verde-balatro-vertical.png")
+        self.side_label = None
+        self.current_img = None
+
+        self.menu_img_original = Image.open("imagens/logo-topo.png")  # Substitua pelo caminho real
+        self.menu_img_label = None
+        self.menu_img_atual = None
+
         self.criar_tela()
 
     def criar_tela(self):
-        side_img = CTkImage(dark_image=Image.open("imagens/side-img.png"), light_image=Image.open("imagens/side-img.png"), size=(800, 780))
 
-        self.right_frame = CTkFrame(self, width=800, height=780, fg_color="#ffffff")
-        self.right_frame.pack_propagate(0)
-        self.right_frame.pack(side="right", fill="both")
-        CTkLabel(self.right_frame, text="", image=side_img).pack(fill="both", expand=True)
+        # Frame de login
+        self.frame_menu = CTkFrame(self, fg_color="#1E1E1E",corner_radius=0)
+        self.frame_menu.grid(row=0, column=0, sticky="nsew", padx=20, pady=40)
+        self.frame_menu.grid_columnconfigure(0, weight=1)
 
-        self.left_frame = CTkFrame(self, width=400, height=780, fg_color="#ffffff")
-        self.left_frame.pack_propagate(0)
-        self.left_frame.pack(side="left", fill="both")
+        self.image_frame = CTkFrame(self, fg_color="#1E1E1E", corner_radius=0)
+        self.image_frame.grid(row=0, column=1, sticky="nsew")
+        self.image_frame.grid_propagate(False)
+        self.image_frame.grid_rowconfigure(0, weight=1)
+        self.image_frame.grid_columnconfigure(0, weight=2)
 
-        CTkButton(self.left_frame, text="Jogar", fg_color="#601E88", hover_color="#E44982", 
-                  font=("Arial Bold", 14), text_color="#ffffff", width=348, height=60, 
-                  command=lambda: self.controller.show_frame(MateriasJogo)).pack(anchor="w", pady=(400, 0), padx=(25, 0)) 
-        CTkButton(self.left_frame, text="Central Professor", fg_color="#601E88", hover_color="#E44982", 
-                  font=("Arial Bold", 14), text_color="#ffffff", width=348, height=60, command=lambda: self.controller.show_frame(CentralProfessor)).pack(anchor="w", pady=(20, 0), padx=(25, 0))
-        CTkButton(self.left_frame, text="Sair", fg_color="#601E88", hover_color="#E44982",
-                  font=("Arial Bold", 14), text_color="#ffffff", width=348, height=60, 
-                  command=self.controller.destroy).pack(anchor="w", pady=(20, 0), padx=(25, 0))
+        resized_img = CTkImage(dark_image=self.original_img, light_image=self.original_img, size=(400, 580))
+        self.current_img = resized_img
+        self.side_label = CTkLabel(self.image_frame, text="", image=self.current_img)
+        self.side_label.grid(row=0, column=1, sticky="nsew")
+
+        self.image_frame.bind("<Configure>", self.redimensionar_imagem_lateral)
+
+        resized_menu_img = CTkImage(dark_image=self.menu_img_original, light_image=self.menu_img_original, size=(500, 260))
+        self.menu_img_atual = resized_menu_img
+        self.menu_img_label = CTkLabel(self.frame_menu, text="", image=self.menu_img_atual)
+        self.menu_img_label.grid(row=0, column=0, pady=(50, 10))
+
+        self.frame_menu.bind("<Configure>", self.redimensionar_imagem_menu)
+
+        
+
+        CTkButton(self.frame_menu, text="JOGAR", fg_color="#25734D", hover_color="#14402b", 
+                  font=("courier new", 25, "bold"), text_color="#ffffff",  height=70, 
+                  command=lambda: self.controller.show_frame(MateriasJogo), corner_radius=11, border_color="#34A16D", border_width=3).grid(column = 0, row = 1, sticky = "ew", pady=(130,20)) 
+        CTkButton(self.frame_menu, text="CENTRAL PROFESSOR", fg_color="#FF9700", hover_color="#c27402", 
+                  font=("courier new", 25, "bold"), text_color="#ffffff",  height=70, command=lambda: self.controller.show_frame(CentralProfessor), corner_radius=11, border_color="#FFBB00", border_width=3).grid(column = 0, row=2, sticky="ew", pady=(0,20))
+        CTkButton(self.frame_menu, text="SAIR", fg_color="#D22D23", hover_color="#942019",
+                  font=("courier new", 25, "bold"), text_color="#ffffff", height=70, 
+                  command=self.controller.destroy, corner_radius=11, border_color="#DB453D", border_width=3).grid(column = 0, row = 3, sticky="ew", pady=(0,30))
+
+
+    def redimensionar_imagem_lateral(self, event=None):
+        new_width = self.image_frame.winfo_width()
+        new_height = self.image_frame.winfo_height()
+
+        if new_width > 0 and new_height > 0:
+            resized_pil = self.original_img.resize((new_width, new_height), Image.LANCZOS)
+            self.current_img = CTkImage(dark_image=resized_pil, light_image=resized_pil, size=(new_width, new_height))
+            self.side_label.configure(image=self.current_img)
+
+    def redimensionar_imagem_menu(self, event=None):
+        new_width = self.frame_menu.winfo_width()
+        altura_desejada = 180
+
+        if new_width > 0:
+            resized_pil = self.menu_img_original.resize((int(new_width * 0.8), altura_desejada), Image.LANCZOS)
+            self.menu_img_atual = CTkImage(dark_image=resized_pil, light_image=resized_pil, size=(resized_pil.width, altura_desejada))
+            self.menu_img_label.configure(image=self.menu_img_atual)
+
+
 
 class Menu(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
-        self.configure(width=1200, height=780, fg_color="#ffffff")
-        self.pack_propagate(0)
+        self.configure(fg_color="#1E1E1E")
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=7)
+
+        self.original_img = Image.open("imagens/fundo-verde-balatro-vertical.png")
+        self.side_label = None
+        self.current_img = None
+
+        self.menu_img_original = Image.open("imagens/logo-topo.png")  # Substitua pelo caminho real
+        self.menu_img_label = None
+        self.menu_img_atual = None
+
         self.criar_tela()
 
     def criar_tela(self):
-        side_img = CTkImage(dark_image=Image.open("imagens/side-img.png"), light_image=Image.open("imagens/side-img.png"), size=(800, 780))
+
+        # Frame de login
+        self.frame_menu = CTkFrame(self, fg_color="#1E1E1E",corner_radius=0)
+        self.frame_menu.grid(row=0, column=0, sticky="nsew", padx=20, pady=40)
+        self.frame_menu.grid_columnconfigure(0, weight=1)
+
+        self.image_frame = CTkFrame(self, fg_color="#1E1E1E", corner_radius=0)
+        self.image_frame.grid(row=0, column=1, sticky="nsew")
+        self.image_frame.grid_propagate(False)
+        self.image_frame.grid_rowconfigure(0, weight=1)
+        self.image_frame.grid_columnconfigure(0, weight=2)
+
+        resized_img = CTkImage(dark_image=self.original_img, light_image=self.original_img, size=(400, 580))
+        self.current_img = resized_img
+        self.side_label = CTkLabel(self.image_frame, text="", image=self.current_img)
+        self.side_label.grid(row=0, column=1, sticky="nsew")
+
+        self.image_frame.bind("<Configure>", self.redimensionar_imagem_lateral)
+
+        resized_menu_img = CTkImage(dark_image=self.menu_img_original, light_image=self.menu_img_original, size=(500, 260))
+        self.menu_img_atual = resized_menu_img
+        self.menu_img_label = CTkLabel(self.frame_menu, text="", image=self.menu_img_atual)
+        self.menu_img_label.grid(row=0, column=0, pady=(50, 10))
+
+        self.frame_menu.bind("<Configure>", self.redimensionar_imagem_menu)
+
         
 
-        self.right_frame = CTkFrame(self, width=800, height=780, fg_color="#ffffff")
-        self.right_frame.pack_propagate(0)
-        self.right_frame.pack(side="right", fill="both")
-        CTkLabel(self.right_frame, text="", image=side_img).pack(fill="both", expand=True)
+        CTkButton(self.frame_menu, text="JOGAR", fg_color="#25734D", hover_color="#14402b", 
+                  font=("courier new", 25, "bold"), text_color="#ffffff",  height=70, 
+                  command=lambda: self.controller.show_frame(MateriasJogo), corner_radius=11,border_color="#34A16D", border_width=3).grid(column = 0, row = 1, sticky = "ew", pady=(170,20)) 
+        CTkButton(self.frame_menu, text="SAIR", fg_color="#D22D23", hover_color="#942019",
+                  font=("courier new", 25, "bold"), text_color="#ffffff", height=70, 
+                  command=self.controller.destroy, corner_radius=11,border_color="#DB453D", border_width=3).grid(column = 0, row = 3, sticky="ew", pady=(0,30))
 
-        self.left_frame = CTkFrame(self, width=400, height=780, fg_color="#ffffff")
-        self.left_frame.pack_propagate(0)
-        self.left_frame.pack(side="left", fill="both")
 
-        CTkButton(self.left_frame, text="Jogar", fg_color="#601E88", hover_color="#E44982", 
-                  font=("Arial Bold", 14), text_color="#ffffff", width=348, height=48, 
-                  command=lambda: self.controller.show_frame(Perguntas)).pack(anchor="w", pady=(400, 0), padx=(25, 0))
-        CTkButton(self.left_frame, text="Estatísticas", fg_color="#601E88", hover_color="#E44982", 
-                  font=("Arial Bold", 14), text_color="#ffffff", width=348, height=48).pack(anchor="w", pady=(20, 0), padx=(25, 0))
-        CTkButton(self.left_frame, text="Opções", fg_color="#601E88", hover_color="#E44982", 
-                  font=("Arial Bold", 14), text_color="#ffffff", width=348, height=48).pack(anchor="w", pady=(20, 0), padx=(25, 0))
-        CTkButton(self.left_frame, text="Sair", fg_color="#601E88", hover_color="#E44982",
-                  font=("Arial Bold", 14), text_color="#ffffff", width=348, height=48, 
-                  command=self.controller.destroy).pack(anchor="w", pady=(20, 0), padx=(25, 0))
+    def redimensionar_imagem_lateral(self, event=None):
+        new_width = self.image_frame.winfo_width()
+        new_height = self.image_frame.winfo_height()
+
+        if new_width > 0 and new_height > 0:
+            resized_pil = self.original_img.resize((new_width, new_height), Image.LANCZOS)
+            self.current_img = CTkImage(dark_image=resized_pil, light_image=resized_pil, size=(new_width, new_height))
+            self.side_label.configure(image=self.current_img)
+
+    def redimensionar_imagem_menu(self, event=None):
+        new_width = self.frame_menu.winfo_width()
+        altura_desejada = 180
+
+        if new_width > 0:
+            resized_pil = self.menu_img_original.resize((int(new_width * 0.8), altura_desejada), Image.LANCZOS)
+            self.menu_img_atual = CTkImage(dark_image=resized_pil, light_image=resized_pil, size=(resized_pil.width, altura_desejada))
+            self.menu_img_label.configure(image=self.menu_img_atual)
 
 class Perguntas(BaseFrame):
     def __init__(self, parent, controller):
@@ -818,6 +940,11 @@ class Perguntas(BaseFrame):
         self.checkpoint_atingido = False  # Flag para verificar se atingiu checkpoint
         self.materia_selecionada = None
         self.tempo_inicio = time.time()
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=4)
+        self.grid_columnconfigure(1, weight=1)
+
         self.criar_tela()
 
         print(self.materia_atual)
@@ -861,65 +988,70 @@ class Perguntas(BaseFrame):
         return self.perguntas
 
     def criar_tela(self):
-        self.left_frame = CTkFrame(self, width=850, height=780, fg_color="#ffffff")
-        self.left_frame.pack_propagate(0)
-        self.left_frame.pack(side="left", fill="both")
+        self.left_frame = CTkFrame(self, fg_color="#3B3B3B", corner_radius=0)
+        self.left_frame.grid(row=0, column=0, sticky="nsew")
+        self.left_frame.grid_propagate(False)
+        self.left_frame.grid_rowconfigure(0, weight=1)
+        self.left_frame.grid_rowconfigure(1, weight=4)  # dá mais espaço para os botões
+        self.left_frame.grid_columnconfigure(0, weight=1)
 
-        self.right_frame = CTkFrame(self, width=350, height=780, fg_color="#707070", corner_radius=0)
-        self.right_frame.pack_propagate(0)
-        self.right_frame.pack(side="right", fill="both")
+        self.right_frame = CTkFrame(self, fg_color="#1E1E1E", corner_radius=0)
+        self.right_frame.grid(row=0, column=1, sticky="nsew")
+        self.right_frame.grid_propagate(False)
+        self.right_frame.grid_rowconfigure(0, weight=0)
+        self.right_frame.grid_columnconfigure(0, weight=1)
         
-        self.frame_pergunta = CTkFrame(self.left_frame, width=800, height=200, fg_color="#999999", corner_radius=10)
-        self.frame_pergunta.pack(anchor="w", padx=(25), pady=(50))
-        self.frame_pergunta.pack_propagate(False)
-        
-        self.texto_pergunta = CTkLabel(self.frame_pergunta, text="", font=("Arial Bold", 25), text_color="#ffffff")
-        self.texto_pergunta.pack(padx=(25,0), pady=(30,0))
+        self.frame_pergunta = CTkFrame(self.left_frame, height=200, fg_color="#3B5055", corner_radius=11, border_width=3, border_color="#B5C6D0")
+        self.frame_pergunta.grid(column=0, row=0, sticky="nsew", padx=25, pady=(25, 0))
+        self.frame_pergunta.grid_propagate(False)
 
-        self.texto_dica = CTkLabel(self.frame_pergunta, text="", font=("Arial Bold", 18), text_color="#ffffff")
-        self.texto_dica.pack(padx=(25,0), pady=(35,0))
+        self.texto_pergunta = CTkLabel(self.frame_pergunta, text="", font=("courier new", 22, "bold"), text_color="#ffffff")
+        self.texto_pergunta.grid(column=0, row=0, sticky="ew", pady=25, padx=25)
 
-        self.label_pontuacao = CTkLabel(self.right_frame, text="Pontuação: 0", font=("Arial Bold", 18), text_color="#ffffff")
-        self.label_pontuacao.pack(pady=(20, 0)) 
+        self.texto_dica = CTkLabel(self.frame_pergunta, text="", font=("courier new", 18, "bold"), text_color="#ffffff")
+        self.texto_dica.grid(column=0, row=1, sticky="ew", pady=15, padx=10)
 
-        self.botao_ajuda_dica = CTkButton(self.right_frame, text="Dica", font=("Arial Bold", 18), fg_color="#601E88", 
-                                         text_color="#ffffff", width=250, height=100, command=self.mostrar_dica)
-        self.botao_ajuda_dica.pack(padx=(25,0), pady=(30,0))
+        # Novo frame apenas para os botões
+        self.frame_botoes = CTkFrame(self.left_frame, fg_color="transparent")
+        self.frame_botoes.grid(row=1, column=0, sticky="nsew", padx=25, pady=25)
+        self.frame_botoes.grid_rowconfigure((0, 1, 2, 3), weight=1)
+        self.frame_botoes.grid_columnconfigure(0, weight=1)
 
-        self.botao_ajuda_50 = CTkButton(self.right_frame, text="50% / 50%", font=("Arial Bold", 18), fg_color="#601E88", 
-                                       text_color="#ffffff", width=250, height=100, command=self.eliminar_alternativas)
-        self.botao_ajuda_50.pack(padx=(25,0), pady=(30,0))
-        
-        self.botao_ajuda_pular = CTkButton(self.right_frame, text="Pular", font=("Arial Bold", 18), fg_color="#601E88", 
-                                          text_color="#ffffff", width=250, height=100, command=self.pular_pergunta)
-        self.botao_ajuda_pular.pack(padx=(25,0), pady=(30,0))
-        
         self.botoes_alternativas = []
-
-        self.botao_encerrar = CTkButton(self.right_frame, text="Encerrar Jogo", 
-                                      font=("Arial Bold", 18), fg_color="#E44982", 
-                                      text_color="#ffffff", width=250, height=100, 
-                                      command=self.mostrar_janela_fim_jogo)
-        self.botao_encerrar.pack(padx=(25,0), pady=(30,0))
-
-        
         for i in range(4):
-            botao = CTkButton(self.left_frame, text="", fg_color="#601E88", font=("Arial Bold", 14), 
-                             text_color="#ffffff", width=800, height=80, corner_radius=10,
-                             command=lambda i=i: self.verificar_resposta(i))
-            botao.pack(anchor="w", pady=(20, 0), padx=(25, 0))
+            botao = CTkButton(self.frame_botoes, text="", fg_color="#FF9700", font=("courier new", 25, "bold"),
+                            text_color="#FFFFFF", corner_radius=10,
+                            command=lambda i=i: self.verificar_resposta(i), hover_color="#c27402", border_color="#FFBB00")
+            botao.grid(row=i, column=0, sticky="nsew", pady=(10 if i > 0 else 0, 0))  
             self.botoes_alternativas.append(botao)
+
+        self.botão_pontuação = CTkButton(self.right_frame, text="R$ 0", font=("courier new", 25,"bold"), text_color="#ffffff", fg_color="#0269A0", height=90, corner_radius=10)
+        self.botão_pontuação.grid(column=0, row=0, padx=15, pady=(40,60), sticky="ew")
+
+        self.botao_ajuda_dica = CTkButton(self.right_frame, text="DICA", font=("courier new", 20, "bold"), fg_color="#25734D", 
+                                        text_color="#ffffff",  height=80, command=self.mostrar_dica, corner_radius=10, hover_color="#14402b", border_color="#34A16D",  border_width=3)
+        self.botao_ajuda_dica.grid(row=1, column=0, padx=15, pady=10, sticky="ew")
+
+        self.botao_ajuda_50 = CTkButton(self.right_frame, text="50% / 50%", font=("courier new", 20, "bold"), fg_color="#25734D", 
+                                    text_color="#ffffff",  height=80, command=self.eliminar_alternativas, corner_radius=10, hover_color="#14402b", border_color="#34A16D",  border_width=3)
+        self.botao_ajuda_50.grid(row=2, column=0, padx=15, pady=10, sticky="ew")
         
-        self.label_feedback = CTkLabel(self.left_frame, text="", font=("Arial Bold", 18), text_color="#E44982")
-        self.label_feedback.pack(pady=(20, 0))
+        self.botao_ajuda_pular = CTkButton(self.right_frame, text="PULAR", font=("courier new", 20, "bold"), fg_color="#25734D", 
+                                        text_color="#ffffff",  height=80, command=self.pular_pergunta, corner_radius=10, hover_color="#14402b", border_color="#34A16D",  border_width=3)
+        self.botao_ajuda_pular.grid(row=3, column=0, padx=15, pady=(10,40), sticky="ew")
         
-        # Frame para tela de jogo encerrado (inicialmente oculto)
+        self.botao_encerrar = CTkButton(self.right_frame, text="ENCERRAR", 
+                                    font=("courier new", 20, "bold"), fg_color="#D22D23", 
+                                    text_color="#ffffff",  height=150, 
+                                    command=self.mostrar_janela_fim_jogo, corner_radius=10, hover_color="#942019",border_color="#DB453D", border_width=3)
+        self.botao_encerrar.grid(row=4, column=0, padx=15, pady=(40,25), sticky="ew")
+
         self.game_over_frame = CTkFrame(self.left_frame, width=800, height=500, fg_color="#ffffff", corner_radius=10)
         self.game_over_label = CTkLabel(self.game_over_frame, text="Jogo Encerrado", font=("Arial Bold", 40), text_color="#FF0000")
         self.game_over_label.pack(pady=(150, 30))
         self.game_over_points = CTkLabel(self.game_over_frame, text="", font=("Arial Bold", 30))
         self.game_over_points.pack(pady=(0, 50))
-        
+
         self.carregar_pergunta()
 
     
@@ -936,10 +1068,10 @@ class Perguntas(BaseFrame):
             random.shuffle(alternativas)
             
             for i in range(4):
-                self.botoes_alternativas[i].configure(text=alternativas[i], fg_color="#601E88", state="normal")
+                self.botoes_alternativas[i].configure(text=alternativas[i], fg_color="#FF9700", state="normal", border_color="#FFBB00", border_width=4)
             
 
-            self.label_feedback.configure(text="")
+
         else:
             self.mostrar_janela_jogo_concluido()
             for botao in self.botoes_alternativas:
@@ -960,7 +1092,7 @@ class Perguntas(BaseFrame):
             incorretas = [botao for botao in self.botoes_alternativas if botao.cget("text") != pergunta_atual["correta"]]
             random.shuffle(incorretas)
             for botao in incorretas[:2]:
-                botao.configure(state="disabled")
+                botao.configure(state="disabled", fg_color="#D22D23", border_color="#DB453D")
     
     def pular_pergunta(self):
         if not self.ajuda_pular_usada:
@@ -974,11 +1106,10 @@ class Perguntas(BaseFrame):
         alternativa_selecionada = self.botoes_alternativas[indice].cget("text")
         
         if alternativa_selecionada == pergunta_atual["correta"]:
-            self.label_feedback.configure(text="Correto!", text_color="#2ECC71")
-            self.botoes_alternativas[indice].configure(fg_color="#2ECC71")
+            self.botoes_alternativas[indice].configure(fg_color="#25734D", border_color="#34A16D")
             self.pontuacao = self.pontos[self.i_pontos]
             self.i_pontos += 1
-            self.label_pontuacao.configure(text=f"Pontuação: {self.pontuacao}")
+            self.botão_pontuação.configure(text=f"Prêmio: R$ {self.pontuacao}")
             
             # Desabilitar todos os botões após resposta correta
             for botao in self.botoes_alternativas:
@@ -991,8 +1122,7 @@ class Perguntas(BaseFrame):
             self.indice_pergunta += 1
             self.after(1000, self.carregar_pergunta)
         else:
-            self.label_feedback.configure(text="Não foi dessa vez!", text_color="#E44982")
-            self.botoes_alternativas[indice].configure(fg_color="#FF0000")
+            self.botoes_alternativas[indice].configure(fg_color="#D22D23",border_color="#DB453D" )
             
             # Verificar se tem checkpoint para usar
             if self.checkpoint_atingido:
@@ -1049,14 +1179,18 @@ class Perguntas(BaseFrame):
         self.ajuda_dica_usada = False
         self.ajuda_50_usada = False
         self.ajuda_pular_usada = False
+        self.botao_ajuda_dica.configure(state="able", fg_color="#25734D")
+        self.botao_ajuda_50.configure(state="able", fg_color="#25734D")
+        self.botao_ajuda_pular.configure(state="able", fg_color="#25734D")
         self.i_pontos = 0
         self.pontuacao = 0
         self.checkpoint_atingido = False
 
-        for botao in self.botoes_alternativas:
-            botao.pack(anchor="w", pady=(20, 0), padx=(25, 0))
+        for i, botao in enumerate(self.botoes_alternativas):
+            botao.grid(row=i, column=0, sticky="nsew", pady=(10 if i > 0 else 0, 0))  
 
-        self.label_pontuacao.configure(text="Pontuação: 0")
+
+        self.botão_pontuação.configure(text="Prêmio: R$ 0")
         self.carregar_pergunta()
 
     def mostrar_janela_jogo_concluido(self):
