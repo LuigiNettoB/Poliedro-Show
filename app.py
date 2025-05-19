@@ -570,25 +570,32 @@ class CentralProfessor(BaseFrame):
         self.bg_label.place(relx=0, rely=0, relwidth=1, relheight=1)
         self.bind("<Configure>", self.redimensionar_imagem)
 
+        # Carregamento das imagens dos botões
+        img_perguntas = CTkImage(light_image=Image.open("imagens/perguntas.png"),size=(60, 60))
+        img_jogadores = CTkImage(light_image=Image.open("imagens/jogadores.png"),size=(60, 60))
+        img_disciplinas = CTkImage(light_image=Image.open("imagens/disciplinas.png"),size=(60, 60))
+        img_instrucoes = CTkImage(light_image=Image.open("imagens/instrucoes.png"),size=(60, 60))
+
+
         # Botão Voltar no canto superior
         CTkButton(self, height=35, width=70, text="<<<<", fg_color="#D22D23",hover_color="#942019",bg_color="#245d4a", text_color="#ffffff",border_color="#DB453D", border_width=3,
                   command=lambda: self.controller.show_frame(MenuProfessor), font=("courier new",18,"bold")).place(x=30, y=30)
 
         # Botões principais diretamente na grid do BaseFrame
-        CTkButton(self, height=300, width=200, text="PERGUNTAS", fg_color="#999999",
+        CTkButton(self, height=300, width=200, text="PERGUNTAS", fg_color="#FF9700",
                   text_color="#ffffff", font=("courier new",22,"bold"),
-                  command=lambda: self.controller.show_frame(PerguntasProfessor), bg_color="#245d4a", corner_radius=10).grid(row=1, column=0, padx=15, pady=10)
+                  command=lambda: self.controller.show_frame(PerguntasProfessor), bg_color="#245d4a", corner_radius=11, hover_color="#c27402", border_color="#FFBB00", border_width=3, image=img_perguntas, compound="top").grid(row=1, column=0, padx=15, pady=10)
 
-        CTkButton(self, height=300, width=200, text="JOGADORES", fg_color="#999999",
+        CTkButton(self, height=300, width=200, text="JOGADORES", fg_color="#FF9700",
                   text_color="#ffffff", font=("courier new",22,"bold"),
-                  command=lambda: self.controller.show_frame(Jogadores), bg_color="#245d4a", corner_radius=10).grid(row=1, column=1, padx=15, pady=10)
+                  command=lambda: self.controller.show_frame(Jogadores), bg_color="#245d4a", corner_radius=11, hover_color="#c27402", border_color="#FFBB00", border_width=3,  image=img_jogadores, compound="top").grid(row=1, column=1, padx=15, pady=10)
 
-        CTkButton(self, height=300, width=200, text="DISCIPLINAS", fg_color="#999999",
+        CTkButton(self, height=300, width=200, text="DISCIPLINAS", fg_color="#FF9700",
                   text_color="#ffffff", font=("courier new",22,"bold"),
-                  command=lambda: self.controller.show_frame(MateriasProfessor), bg_color="#245d4a", corner_radius=10).grid(row=1, column=2, padx=15, pady=10)
+                  command=lambda: self.controller.show_frame(MateriasProfessor), bg_color="#245d4a", corner_radius=11, hover_color="#c27402", border_color="#FFBB00", border_width=3,  image=img_disciplinas, compound="top").grid(row=1, column=2, padx=15, pady=10)
 
-        CTkButton(self, height=300, width=200, text="INSTRUÇÕES", fg_color="#999999",
-                  text_color="#ffffff", font=("courier new",22,"bold"), bg_color="#245d4a", corner_radius=10).grid(row=1, column=3, padx=15, pady=10)
+        CTkButton(self, height=300, width=200, text="INSTRUÇÕES", fg_color="#FF9700",
+                  text_color="#ffffff", font=("courier new",22,"bold"), bg_color="#245d4a", corner_radius=11, hover_color="#c27402", border_color="#FFBB00", border_width=3,  image=img_instrucoes, compound="top").grid(row=1, column=3, padx=15, pady=10)
 
     def redimensionar_imagem(self, event):
         nova_img = self.original_image.resize((event.width, event.height), Resampling.LANCZOS)
@@ -1229,7 +1236,7 @@ class Perguntas(BaseFrame):
 class PerguntasProfessor(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
-        self.configure(width=1200, height=780, fg_color="#ffffff")
+        self.configure(width=1200, height=780, fg_color="#1E1E1E")
         self.pack_propagate(0)
         self.banco = controller.banco
         self.correta = " "
@@ -1239,80 +1246,94 @@ class PerguntasProfessor(BaseFrame):
         self.criar_tela()
         self.materia_escolhida = " "
         self.mostrar_dados()
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1, uniform="grupo")
+        self.grid_columnconfigure(1, weight=1, uniform="grupo")
         
 
     def criar_tela(self):
-        
-        self.left_frame = CTkFrame(self, width=550, height=780, fg_color="#707070", corner_radius=0)
-        self.left_frame.pack_propagate(0)
-        self.left_frame.pack(side="left", fill="both")
+        self.left_frame = CTkFrame(self, fg_color="#1E1E1E")
+        self.left_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        self.left_frame.grid_columnconfigure(0, weight=1)
+        self.left_frame.grid_columnconfigure(1, weight=1)
+        self.left_frame.grid_columnconfigure(2, weight=1)
 
-        self.right_frame = CTkFrame(self, width=650, height=780, fg_color="#505050", corner_radius=0)
-        self.right_frame.pack_propagate(0)
-        self.right_frame.pack(side="right", fill="both")
+        self.right_frame = CTkFrame(self, fg_color="#1E1E1E", corner_radius=0)
+        self.right_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        self.right_frame.grid_rowconfigure(0, weight=1)
+        self.right_frame.grid_columnconfigure(0, weight=1)
 
-        CTkLabel(self.left_frame, text="Insira a pergunta:", font=("Arial Bold", 18)).pack(anchor="w", padx=(45,0), pady=(40,0))
-        self.input_pergunta = CTkEntry(self.left_frame, font=("Arial Bold", 14), width=470, height=33)
-        self.input_pergunta.pack(padx=(20,20), pady=(10,0))
+        CTkButton(self.left_frame, text="<<<<", height=35, width=70, fg_color="#D22D23", hover_color="#942019", border_width=3, border_color= "#DB453D", font=("courier new", 18, "bold"), command= lambda: self.controller.show_frame(CentralProfessor)).place(x=20, y=20)
 
-        CTkLabel(self.left_frame, text="Insira a alternativa A: ", font=("Arial Bold", 18)).pack(anchor="w", padx=(45,0), pady=(20,0))
-        self.input_alt_a = CTkEntry(self.left_frame, font=("Arial Bold", 14), width=470, height=33)
-        self.input_alt_a.pack(padx=(20,20), pady=(10,0))
+        CTkLabel(self.left_frame, text="Pergunta:", font=("courier new", 18, "bold")).grid(row=0, column=0, sticky="w", padx=20, pady=(75, 0))
+        self.input_pergunta = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
+                                       border_width=2, text_color="#ffffff")
+        self.input_pergunta.grid(row=1, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Insira a alternativa B: ", font=("Arial Bold", 18)).pack(anchor="w", padx=(45,0), pady=(20,0))
-        self.input_alt_b = CTkEntry(self.left_frame, font=("Arial Bold", 14), width=470, height=33)
-        self.input_alt_b.pack(padx=(20,20), pady=(10,0))
+        CTkLabel(self.left_frame, text="Alternativa A:", font=("courier new", 18, "bold")).grid(row=2, column=0, sticky="w", padx=20, pady=(10, 0))
+        self.input_alt_a = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
+                                       border_width=2, text_color="#ffffff")
+        self.input_alt_a.grid(row=3, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Insira a alternativa C: ", font=("Arial Bold", 18)).pack(anchor="w", padx=(45,0), pady=(20,0))
-        self.input_alt_c = CTkEntry(self.left_frame, font=("Arial Bold", 14), width=470, height=33)
-        self.input_alt_c.pack(padx=(20,20), pady=(10,0))
+        CTkLabel(self.left_frame, text="Alternativa B:", font=("courier new", 18, "bold")).grid(row=4, column=0, sticky="w", padx=20, pady=(10, 0))
+        self.input_alt_b = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
+                                       border_width=2, text_color="#ffffff")
+        self.input_alt_b.grid(row=5, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Insira a alternativa D: ", font=("Arial Bold", 18)).pack(anchor="w", padx=(45,0), pady=(20,0))
-        self.input_alt_d = CTkEntry(self.left_frame, font=("Arial Bold", 14), width=470, height=33)
-        self.input_alt_d.pack(padx=(20,20), pady=(10,0))
+        CTkLabel(self.left_frame, text="Alternativa C:", font=("courier new", 18, "bold")).grid(row=6, column=0, sticky="w", padx=20, pady=(10, 0))
+        self.input_alt_c = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
+                                       border_width=2, text_color="#ffffff")
+        self.input_alt_c.grid(row=7, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Insira a Dica: ", font=("Arial Bold", 18)).pack(anchor="w", padx=(45,0), pady=(20,0))
-        self.input_dica = CTkEntry(self.left_frame, font=("Arial Bold", 14), width=470, height=33)
-        self.input_dica.pack(padx=(20,20), pady=(10,0))
+        CTkLabel(self.left_frame, text="Alternativa D:", font=("courier new", 18, "bold")).grid(row=8, column=0, sticky="w", padx=20, pady=(10, 0))
+        self.input_alt_d = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
+                                       border_width=2, text_color="#ffffff")
+        self.input_alt_d.grid(row=9, column=0, padx=20, pady=5, sticky="ew")
 
-        self.input_dificuldade = CTkOptionMenu(self.left_frame, values=["---","Fácil", "Médio", "Difícil"], command=self.mostrar_dificuldade)
-        self.input_dificuldade.pack(anchor="w", padx=(45,0), pady=(20,0))
+        CTkLabel(self.left_frame, text="Dica:", font=("courier new", 18, "bold")).grid(row=10, column=0, sticky="w", padx=20, pady=(10, 0))
+        self.input_dica = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
+                                       border_width=2, text_color="#ffffff")
+        self.input_dica.grid(row=11, column=0, padx=20, pady=5, sticky="ew")
 
-        self.input_correta = CTkOptionMenu(self.left_frame, values=["---","A", "B", "C", "D"], command=self.mostrar_correta)
-        self.input_correta.pack(anchor="w", padx=(45,0), pady=(10,0))
+        self.options_frame = CTkFrame(self.left_frame, fg_color="transparent")
+        self.options_frame.grid(row=12, column=0, padx=20, pady=5, sticky="w")
 
-        self.input_materia = CTkOptionMenu(self.left_frame, values=self.materias, command=self.mostrar_materia)
-        self.input_materia.pack(anchor="w", padx=(45,0), pady=(10,0))
+        self.input_dificuldade = CTkOptionMenu(self.options_frame, values=["Fácil", "Médio", "Difícil"], command=self.mostrar_dificuldade, font=("courier new", 16, "bold"), height=32,  text_color="#ffffff", fg_color="#3B5055",button_color="#3B5055",button_hover_color="#FF9700")
+        self.input_dificuldade.set("Dificuldade..")
+        self.input_dificuldade.grid(row=0, column=0, padx=10, pady=15)
 
-        CTkButton(self.left_frame, text="Adicionar Pergunta", width=470, height=40, command=self.cadastrar_pergunta).pack(padx=(20,20), pady=(10,0))
+        self.input_correta = CTkOptionMenu(self.options_frame, values=["A", "B", "C", "D"], command=self.mostrar_correta, font= ("courier new", 16, "bold"), height=32,fg_color="#3B5055",button_color="#3B5055",button_hover_color="#FF9700")
+        self.input_correta.set("Correta..")
+        self.input_correta.grid(row=0, column=1, padx=10, pady=15)
 
-        # Configuração do Treeview com scrollbars
-        scrollbar_y = ttk.Scrollbar(self.right_frame, orient="vertical")
-        scrollbar_y.pack(side="right", fill="y")
+        self.input_materia = CTkOptionMenu(self.options_frame, values=self.materias, command=self.mostrar_materia, font=("courier new", 16, "bold"), height=32, fg_color="#3B5055",button_color="#3B5055",button_hover_color="#FF9700")
+        self.input_materia.set("Disciplina..")
+        self.input_materia.grid(row=0, column=2, padx=10, pady=15)
 
-        scrollbar_x = ttk.Scrollbar(self.right_frame, orient="horizontal")
-        scrollbar_x.pack(side="bottom", fill="x")
 
-        colunas = ("ID","Pergunta","A", "B", "C", "D", "Dificuldade", "Correta", "Dica", "Materia")
+        CTkButton(self.left_frame, text="ADICIONAR", command=self.cadastrar_pergunta, font=("courier new", 18, "bold"), height=65, fg_color="#25734D", hover_color="#14402b",corner_radius=11, border_color="#34A16D", border_width=3 ).grid(row=13, column=0, padx=20, pady=10, sticky="ew"); 
 
-        self.tree = ttk.Treeview(
-            self.right_frame,
-            columns=colunas,
-            show="headings",
-            yscrollcommand=scrollbar_y.set,
-            xscrollcommand=scrollbar_x.set
-        )
-        self.tree.pack(fill="both", expand=True, padx=(40,40), pady=(40,10))
 
-        scrollbar_y.config(command=self.tree.yview)
-        scrollbar_x.config(command=self.tree.xview)
+        colunas = ("ID", "Pergunta", "A", "B", "C", "D", "Dificuldade", "Correta", "Dica", "Disciplina")
 
+        self.tree = ttk.Treeview(self.right_frame, columns=colunas, show="headings")
         for col in colunas:
             self.tree.heading(col, text=col)
-            self.tree.column(col, width=150, anchor="center")  
+            self.tree.column(col, width=100, anchor="center")
 
-        CTkButton(self.right_frame, text="Deletar", command=self.deletar_dados, width=570, height=55).pack(padx=(40,40), pady=(10,30))
-        
+        self.tree.grid(row=0, column=0, sticky="nsew")
+
+        scrollbar_y = ttk.Scrollbar(self.right_frame, orient="vertical", command=self.tree.yview)
+        scrollbar_y.grid(row=0, column=1, sticky="ns")
+
+        scrollbar_x = ttk.Scrollbar(self.right_frame, orient="horizontal", command=self.tree.xview)
+        scrollbar_x.grid(row=1, column=0, sticky="ew")
+
+        self.tree.configure(yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set)
+
+        CTkButton(self.right_frame, text="DELETAR", command=self.deletar_dados, fg_color="#D22D23",hover_color="#942019", corner_radius=11, border_color="#DB453D", border_width=3 , height=65, font=("courier new", 18, "bold")).grid(row=2, column=0, columnspan=2, pady=15, sticky="ew")
+  
     def mostrar_dados(self):
         try:
             # Limpar a treeview antes de adicionar novos dados
