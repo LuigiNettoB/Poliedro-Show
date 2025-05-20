@@ -667,30 +667,54 @@ class Jogadores(BaseFrame):
 class MateriasJogo(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
-        self.configure(width=1200, height=780, fg_color="#ffffff")
+        self.configure(width=1200, height=780, fg_color="#1E1E1E")
         self.pack_propagate(0)
         self.banco = controller.banco
         self.materias = []
         self.mostrar_materias()
         self.materia = " "
-        self.fonte = ("fixedsys",22,"bold")
         self.criar_tela()
     
     def criar_tela(self):
+        # Configura a grade principal para centralizar elementos
+        self.grid_columnconfigure(0, weight=1)
 
-        self.btn_voltar = CTkButton(master=self,text="Voltar",width=100,height=50, font=self.fonte, command=lambda: self.controller.show_frame(MenuProfessor))
-        self.btn_voltar.grid(column=0,row=0,padx=(15,0),pady=(10,0))
+        # Botão de voltar no canto superior esquerdo (sem centralizar)
+        self.btn_voltar = CTkButton(self, text="<<<<", width=70, height=35,
+                                    font=("courier new", 18, "bold"),
+                                    command=lambda: self.controller.show_frame(MenuProfessor),
+                                    fg_color="#D22D23", hover_color="#942019",
+                                    border_width=3, border_color="#DB453D")
+        self.btn_voltar.place(x=20, y=20)  # mantém o botão de voltar fixo no canto
 
-        CTkLabel(master=self, text="Escolha a matéria para o seu jogo: ", font=("fixedsys",22,"bold")).grid(column=0,row=1,padx=400,pady=(300,30))
+        # Título centralizado
+        CTkLabel(master=self, text="Escolha a matéria para o seu jogo: ",
+                font=("courier new", 22, "bold")).grid(column=0, row=0, pady=(300, 30), sticky="n")
 
-        self.input_materia_jogo = CTkOptionMenu(self, values=self.materias, font=("fixedsys",22,"bold"),command=self.mostrar_materia)
-        self.input_materia_jogo.grid(column=0,row=2,padx=(400,10),pady=10)
+        # Frame das disciplinas centralizado
+        self.frame_disciplinas = CTkFrame(self, fg_color="transparent", corner_radius=0)
+        self.frame_disciplinas.grid(row=1, column=0)
 
-        self.confirmar_materia = CTkButton(self,text="Confirmar Matéria", font=("courier new",14,"bold"), command=self.atualizar_materia_atual)
-        self.confirmar_materia.grid(column = 0, row = 3, padx=100, pady=10)
+        # OptionMenu e botão de confirmar dentro do frame
+        self.input_materia_jogo = CTkOptionMenu(self.frame_disciplinas, values=self.materias,
+                                                font=("courier new", 18, "bold"),
+         
+                                               command=self.mostrar_materia, height=45, fg_color="#3B5055",button_color="#3B5055",button_hover_color="#FF9700", dropdown_fg_color="#3B5055", dropdown_font=("courier new",14,"bold"), dropdown_text_color="#ffffff")
+        self.input_materia_jogo.set("Selecione a disciplina..")
+        self.input_materia_jogo.grid(column=0, row=0, padx=10, pady=10)
 
-        self.btn_iniciar_jogo = CTkButton(master=self, text="Iniciar", font=("fixedsys",22,"bold"),width=300,height=100,command=lambda: self.controller.show_frame(Perguntas))
-        self.btn_iniciar_jogo.grid(column=0,row=4,padx=10,pady=10)
+        self.confirmar_materia = CTkButton(self.frame_disciplinas, text="CONFIRMAR",
+                                        font=("courier new", 18, "bold"),
+                                        command=self.atualizar_materia_atual, height=45,fg_color="#FF9700",hover_color="#c27402", corner_radius=8, border_color="#FFBB00", border_width=3 )
+        self.confirmar_materia.grid(column=1, row=0, padx=20, pady=10)
+
+        # Botão de iniciar jogo centralizado
+        self.btn_iniciar_jogo = CTkButton(master=self, text="JOGAR",
+                                        font=("courier new", 22, "bold"),
+                                        width=500, height=80,
+                                        command=lambda: self.controller.show_frame(Perguntas), fg_color="#25734D", hover_color="#14402b", corner_radius=11, border_color="#34A16D", border_width=3)
+        self.btn_iniciar_jogo.grid(column=0, row=2, pady=40)
+
 
     
     def mostrar_materias(self):
@@ -716,56 +740,60 @@ class MateriasProfessor(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         self.configure(width=1200, height=780, fg_color="#ffffff")
-        self.pack_propagate(0)
         self.criar_tela()
         self.mostrar_materias_perguntas()
+
+        self.grid_columnconfigure(0, weight=1, uniform="grupo")
+        self.grid_columnconfigure(1, weight=1, uniform="grupo")
+        self.grid_rowconfigure(0, weight=1)
+        
     
     def criar_tela(self):
-        
-        
+        # Frame da esquerda (50% da tela)
+        self.left_frame = CTkFrame(self, fg_color="#333", corner_radius=0)
+        self.left_frame.grid(row=0, column=0, sticky="nsew")  # sem padx
 
-        self.left_frame = CTkFrame(self, width=800, height=750, fg_color="#333", corner_radius=0)
-        self.left_frame.pack_propagate(0)
-        self.left_frame.pack(side="left", fill="both")
+        # Frame da direita (50% da tela)
+        self.right_frame = CTkFrame(self, fg_color="#555", corner_radius=0)
+        self.right_frame.grid(row=0, column=1, sticky="nsew")  # sem padx
 
-        self.right_frame = CTkFrame(self,width=400, height=750, fg_color="#555", corner_radius=0)
-        self.right_frame.pack_propagate(0)
-        self.right_frame.pack(side="right", fill="both")
-
-        self.btn_cadastrar_materia = CTkButton(self.right_frame, text="Cadastrar matéria",width=200, fg_color="#E44982", command=self.adicionar_matéria)
-        self.btn_cadastrar_materia.pack()
-
+        # Conteúdo do frame da direita
         self.texto_materia = CTkLabel(self.right_frame, text="Insira a nova matéria: ", text_color="#000")
-        self.texto_materia.pack(side="right",fill="both",padx=50,pady=2)
+        self.texto_materia.grid(row=0, column=0, padx=40, pady=80)
 
-        self.materia = CTkEntry(self.right_frame, width=150, height= 25, fg_color="#ffffff")
-        self.materia.pack(side="right", padx=10,pady=2)
-        
-        
+        self.btn_cadastrar_materia = CTkButton(
+            self.right_frame, text="Cadastrar matéria",
+            fg_color="#E44982", command=self.adicionar_matéria
+        )
+        self.btn_cadastrar_materia.grid(row=1, column=0, padx=40, pady=10, sticky="ew")
 
-        scrollbar_y = ttk.Scrollbar(self.left_frame, orient="vertical")
-        scrollbar_y.pack(side="right", fill="y")
+        self.materia = CTkEntry(self.right_frame, height=25, fg_color="#ffffff")
+        self.materia.grid(row=2, column=0, padx=40, pady=10, sticky="ew")
 
-        scrollbar_x = ttk.Scrollbar(self.left_frame, orient="horizontal")
-        scrollbar_x.pack(side="bottom", fill="x")
-
-        colunas = ("ID","Materia(s)", "Número de Perguntas")
-
+        colunas = ("Disciplinas", "Número de Perguntas")
         self.tree = ttk.Treeview(
             self.left_frame,
             columns=colunas,
-            show="headings",
-            yscrollcommand=scrollbar_y.set,
-            xscrollcommand=scrollbar_x.set
+            show="headings"
         )
-        self.tree.pack(fill="both", expand=True, padx=(40,40), pady=(40,10))
+        self.tree.grid(row=0, column=0, sticky="nsew", padx=40, pady=(40, 10))
 
-        scrollbar_y.config(command=self.tree.yview)
-        scrollbar_x.config(command=self.tree.xview)
+        # Scrollbar vertical (à direita da treeview)
+        scrollbar_y = ttk.Scrollbar(self.left_frame, orient="vertical", command=self.tree.yview)
+        scrollbar_y.grid(row=0, column=1, sticky="ns", pady=(40, 10))  # Alinha com a treeview
 
+        # Scrollbar horizontal (abaixo da treeview)
+        scrollbar_x = ttk.Scrollbar(self.left_frame, orient="horizontal", command=self.tree.xview)
+        scrollbar_x.grid(row=1, column=0, sticky="ew", padx=40)  # Alinha com a treeview
+
+        # Vincula os scrolls à treeview
+        self.tree.configure(yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set)
+
+        # Cabeçalhos e colunas
         for col in colunas:
             self.tree.heading(col, text=col)
             self.tree.column(col, width=150, anchor="center")
+
 
     def mostrar_materias_perguntas(self):
         for sigla, qtd in self.controller.banco.carregar_materias_perguntas():
@@ -1264,55 +1292,67 @@ class PerguntasProfessor(BaseFrame):
         self.right_frame.grid_rowconfigure(0, weight=1)
         self.right_frame.grid_columnconfigure(0, weight=1)
 
-        CTkButton(self.left_frame, text="<<<<", height=35, width=70, fg_color="#D22D23", hover_color="#942019", border_width=3, border_color= "#DB453D", font=("courier new", 18, "bold"), command= lambda: self.controller.show_frame(CentralProfessor)).place(x=20, y=20)
+        CTkButton(self.left_frame, text="<<<<", height=35, width=70, fg_color="#D22D23", hover_color="#942019", border_width=3, border_color= "#DB453D", font=("courier new", 18, "bold"), command= lambda: self.controller.show_frame(CentralProfessor)).place(x=10, y=10)
 
-        CTkLabel(self.left_frame, text="Pergunta:", font=("courier new", 18, "bold")).grid(row=0, column=0, sticky="w", padx=20, pady=(75, 0))
+        self.frame_disciplinas = CTkFrame(self.left_frame, fg_color="transparent", corner_radius=11, height=100,  border_width=2, border_color="#B5C6D0")
+        self.frame_disciplinas.grid(row = 0, column = 0, padx=20, pady=(60,3), sticky="ew")
+        self.frame_disciplinas.grid_columnconfigure(1, weight=1)
+
+        CTkLabel(self.frame_disciplinas, text="Nova disciplina:", font=("courier new",18,"bold")).grid(row=0, column=0, padx=(10,4),pady=5)
+
+        self.input_nova_disciplina = CTkEntry(self.frame_disciplinas, height=35, fg_color="#3B5055", font=("courier new",14,"bold"), border_width=2, border_color="#B5C6D0")
+        self.input_nova_disciplina.grid(row=0, column = 1, padx=5, pady=5, sticky="ew")
+
+        self.cadastrar_disciplina = CTkButton(self.frame_disciplinas, text="ADD", height=35, width=50, font=("courier new",14,"bold"), fg_color="#25734D", hover_color="#14402b")
+        self.cadastrar_disciplina.grid(row = 0, column = 2, pady=5, padx=6)
+
+        CTkLabel(self.left_frame, text="Pergunta:", font=("courier new", 18, "bold")).grid(row=1, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_pergunta = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
-        self.input_pergunta.grid(row=1, column=0, padx=20, pady=5, sticky="ew")
+        self.input_pergunta.grid(row=2, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Alternativa A:", font=("courier new", 18, "bold")).grid(row=2, column=0, sticky="w", padx=20, pady=(10, 0))
+        CTkLabel(self.left_frame, text="Alternativa A:", font=("courier new", 18, "bold")).grid(row=3, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_alt_a = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
-        self.input_alt_a.grid(row=3, column=0, padx=20, pady=5, sticky="ew")
+        self.input_alt_a.grid(row=4, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Alternativa B:", font=("courier new", 18, "bold")).grid(row=4, column=0, sticky="w", padx=20, pady=(10, 0))
+        CTkLabel(self.left_frame, text="Alternativa B:", font=("courier new", 18, "bold")).grid(row=5, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_alt_b = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
-        self.input_alt_b.grid(row=5, column=0, padx=20, pady=5, sticky="ew")
+        self.input_alt_b.grid(row=6, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Alternativa C:", font=("courier new", 18, "bold")).grid(row=6, column=0, sticky="w", padx=20, pady=(10, 0))
+        CTkLabel(self.left_frame, text="Alternativa C:", font=("courier new", 18, "bold")).grid(row=7, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_alt_c = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
-        self.input_alt_c.grid(row=7, column=0, padx=20, pady=5, sticky="ew")
+        self.input_alt_c.grid(row=8, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Alternativa D:", font=("courier new", 18, "bold")).grid(row=8, column=0, sticky="w", padx=20, pady=(10, 0))
+        CTkLabel(self.left_frame, text="Alternativa D:", font=("courier new", 18, "bold")).grid(row=9, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_alt_d = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
-        self.input_alt_d.grid(row=9, column=0, padx=20, pady=5, sticky="ew")
+        self.input_alt_d.grid(row=10, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Dica:", font=("courier new", 18, "bold")).grid(row=10, column=0, sticky="w", padx=20, pady=(10, 0))
+        CTkLabel(self.left_frame, text="Dica:", font=("courier new", 18, "bold")).grid(row=11, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_dica = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
-        self.input_dica.grid(row=11, column=0, padx=20, pady=5, sticky="ew")
+        self.input_dica.grid(row=12, column=0, padx=20, pady=5, sticky="ew")
 
         self.options_frame = CTkFrame(self.left_frame, fg_color="transparent")
-        self.options_frame.grid(row=12, column=0, padx=20, pady=5, sticky="w")
+        self.options_frame.grid(row=13, column=0, padx=20, pady=5, sticky="w")
 
         self.input_dificuldade = CTkOptionMenu(self.options_frame, values=["Fácil", "Médio", "Difícil"], command=self.mostrar_dificuldade, font=("courier new", 16, "bold"), height=32,  text_color="#ffffff", fg_color="#3B5055",button_color="#3B5055",button_hover_color="#FF9700")
         self.input_dificuldade.set("Dificuldade..")
-        self.input_dificuldade.grid(row=0, column=0, padx=10, pady=15)
+        self.input_dificuldade.grid(row=0, column=0, padx=10, pady=10)
 
         self.input_correta = CTkOptionMenu(self.options_frame, values=["A", "B", "C", "D"], command=self.mostrar_correta, font= ("courier new", 16, "bold"), height=32,fg_color="#3B5055",button_color="#3B5055",button_hover_color="#FF9700")
         self.input_correta.set("Correta..")
-        self.input_correta.grid(row=0, column=1, padx=10, pady=15)
+        self.input_correta.grid(row=0, column=1, padx=10, pady=10)
 
         self.input_materia = CTkOptionMenu(self.options_frame, values=self.materias, command=self.mostrar_materia, font=("courier new", 16, "bold"), height=32, fg_color="#3B5055",button_color="#3B5055",button_hover_color="#FF9700")
         self.input_materia.set("Disciplina..")
-        self.input_materia.grid(row=0, column=2, padx=10, pady=15)
+        self.input_materia.grid(row=0, column=2, padx=10, pady=10)
 
 
-        CTkButton(self.left_frame, text="ADICIONAR", command=self.cadastrar_pergunta, font=("courier new", 18, "bold"), height=65, fg_color="#25734D", hover_color="#14402b",corner_radius=11, border_color="#34A16D", border_width=3 ).grid(row=13, column=0, padx=20, pady=10, sticky="ew"); 
+        CTkButton(self.left_frame, text="ADICIONAR", command=self.cadastrar_pergunta, font=("courier new", 18, "bold"), height=65, fg_color="#25734D", hover_color="#14402b",corner_radius=11, border_color="#34A16D", border_width=3 ).grid(row=14, column=0, padx=20, pady=10, sticky="ew"); 
 
 
         colunas = ("ID", "Pergunta", "A", "B", "C", "D", "Dificuldade", "Correta", "Dica", "Disciplina")
