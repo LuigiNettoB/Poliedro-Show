@@ -162,6 +162,18 @@ class BancoDeDados:
                             ''')
         return self.cursor.fetchall()
     
+    def filtrar_perguntas(self, disciplina, dificuldade):
+        if (disciplina == "" or disciplina == "Todas") and dificuldade != "":
+            self.cursor.execute("SELECT id, pergunta, altA, altB, altC, altD, dificuldade, correta, dica, materia FROM Pergunta WHERE dificuldade = ?",(dificuldade,))
+            return self.cursor.fetchall()
+        elif (dificuldade == "" or dificuldade== "Todas") and disciplina != "":
+            self.cursor.execute("SELECT id, pergunta, altA, altB, altC, altD, dificuldade, correta, dica, materia FROM Pergunta WHERE materia = ?", (disciplina,))
+            return self.cursor.fetchall()
+        else:
+            self.cursor.execute("SELECT id, pergunta, altA, altB, altC, altD, dificuldade, correta, dica, materia FROM Pergunta WHERE materia = ? AND dificuldade = ? ", (disciplina,dificuldade))
+            return self.cursor.fetchall()
+
+
     def cadastrar_materia(self,sigla):
         self.cursor.execute("INSERT INTO Materia (sigla) VALUES (?)",(sigla,))
         self.conexao.commit()
@@ -1273,6 +1285,8 @@ class PerguntasProfessor(BaseFrame):
         self.mostrar_materias()
         self.criar_tela()
         self.materia_escolhida = " "
+        self.disciplina_filtrada = ""
+        self.dificuldade_filtrada = ""
         self.mostrar_dados()
 
         self.grid_rowconfigure(0, weight=1)
@@ -1289,7 +1303,7 @@ class PerguntasProfessor(BaseFrame):
 
         self.right_frame = CTkFrame(self, fg_color="#1E1E1E", corner_radius=0)
         self.right_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
-        self.right_frame.grid_rowconfigure(0, weight=1)
+        self.right_frame.grid_rowconfigure(1, weight=1)
         self.right_frame.grid_columnconfigure(0, weight=1)
 
         CTkButton(self.left_frame, text="<<<<", height=35, width=70, fg_color="#D22D23", hover_color="#942019", border_width=3, border_color= "#DB453D", font=("courier new", 18, "bold"), command= lambda: self.controller.show_frame(CentralProfessor)).place(x=10, y=10)
@@ -1303,7 +1317,7 @@ class PerguntasProfessor(BaseFrame):
         self.input_nova_disciplina = CTkEntry(self.frame_disciplinas, height=35, fg_color="#3B5055", font=("courier new",14,"bold"), border_width=2, border_color="#B5C6D0")
         self.input_nova_disciplina.grid(row=0, column = 1, padx=5, pady=5, sticky="ew")
 
-        self.cadastrar_disciplina = CTkButton(self.frame_disciplinas, text="ADD", height=35, width=50, font=("courier new",14,"bold"), fg_color="#25734D", hover_color="#14402b")
+        self.cadastrar_disciplina = CTkButton(self.frame_disciplinas, text="ADD", height=35, width=50, font=("courier new",14,"bold"), fg_color="#25734D", hover_color="#14402b", command=self.adicionar_materia)
         self.cadastrar_disciplina.grid(row = 0, column = 2, pady=5, padx=6)
 
         CTkLabel(self.left_frame, text="Pergunta:", font=("courier new", 18, "bold")).grid(row=1, column=0, sticky="w", padx=20, pady=(7, 0))
@@ -1354,6 +1368,22 @@ class PerguntasProfessor(BaseFrame):
 
         CTkButton(self.left_frame, text="ADICIONAR", command=self.cadastrar_pergunta, font=("courier new", 18, "bold"), height=65, fg_color="#25734D", hover_color="#14402b",corner_radius=11, border_color="#34A16D", border_width=3 ).grid(row=14, column=0, padx=20, pady=10, sticky="ew"); 
 
+        self.frame_filtros = CTkFrame(self.right_frame, fg_color= "transparent", corner_radius=0)
+        self.frame_filtros.grid(row=0, column=0,padx=5, pady=25)
+
+        CTkLabel(self.frame_filtros, text="Filtrar: ", font=("courier new", 16,"bold")).grid(row=0, column=0, padx=6, pady=5)
+
+        self.filtro_disciplina = CTkOptionMenu(self.frame_filtros,values=self.materias+ ["Todas"],font=("courier new",14,"bold"), text_color="#ffffff", fg_color="#3B5055",button_color="#3B5055",button_hover_color="#FF9700", command=self.filtro_disciplina)
+        self.filtro_disciplina.set("Disciplina")
+        self.filtro_disciplina.grid(row=0, column=1, padx=6, pady=5)
+
+        self.filtro_dificuldade=CTkOptionMenu(self.frame_filtros, values=["Fácil","Média","Difícil","Todas"], font=("courier new", 14,"bold"), text_color="#ffffff", fg_color="#3B5055",button_color="#3B5055",button_hover_color="#FF9700", command=self.filtro_dificuldade)
+        self.filtro_dificuldade.set("Dificuldade")
+        self.filtro_dificuldade.grid(row=0, column=2, padx=6, pady=5)
+
+        self.btn_filtrar=CTkButton(self.frame_filtros, text="FILTRAR", font=("courier new",14,"bold"), fg_color="#FF9700", hover_color="#c27402", border_color="#FFBB00", border_width=3, command=self.filtrar_pergunta)
+        self.btn_filtrar.grid(row=0, column=3, padx=6, pady=5)
+
 
         colunas = ("ID", "Pergunta", "A", "B", "C", "D", "Dificuldade", "Correta", "Dica", "Disciplina")
 
@@ -1362,17 +1392,17 @@ class PerguntasProfessor(BaseFrame):
             self.tree.heading(col, text=col)
             self.tree.column(col, width=100, anchor="center")
 
-        self.tree.grid(row=0, column=0, sticky="nsew")
+        self.tree.grid(row=1, column=0, sticky="nsew")
 
         scrollbar_y = ttk.Scrollbar(self.right_frame, orient="vertical", command=self.tree.yview)
-        scrollbar_y.grid(row=0, column=1, sticky="ns")
+        scrollbar_y.grid(row=1, column=1, sticky="ns")
 
         scrollbar_x = ttk.Scrollbar(self.right_frame, orient="horizontal", command=self.tree.xview)
-        scrollbar_x.grid(row=1, column=0, sticky="ew")
+        scrollbar_x.grid(row=2, column=0, sticky="ew")
 
         self.tree.configure(yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set)
 
-        CTkButton(self.right_frame, text="DELETAR", command=self.deletar_dados, fg_color="#D22D23",hover_color="#942019", corner_radius=11, border_color="#DB453D", border_width=3 , height=65, font=("courier new", 18, "bold")).grid(row=2, column=0, columnspan=2, pady=15, sticky="ew")
+        CTkButton(self.right_frame, text="DELETAR", command=self.deletar_dados, fg_color="#D22D23",hover_color="#942019", corner_radius=11, border_color="#DB453D", border_width=3 , height=65, font=("courier new", 18, "bold")).grid(row=3, column=0, columnspan=2, pady=15, sticky="ew")
   
     def mostrar_dados(self):
         try:
@@ -1433,6 +1463,54 @@ class PerguntasProfessor(BaseFrame):
         }
         self.correta = alternativas.get(alternativa, " ")
 
+    def filtro_disciplina(self, disciplina_filtrada):
+        self.disciplina_filtrada = disciplina_filtrada
+        print(self.disciplina_filtrada)
+
+    def filtro_dificuldade(self, dificuldade_filtrada):
+        if dificuldade_filtrada == "Fácil":
+            self.dificuldade_filtrada = "F"
+        elif dificuldade_filtrada == "Média":
+            self.dificuldade_filtrada = "M"
+        elif dificuldade_filtrada == "Difícil":
+            self.dificuldade_filtrada = "D"
+        elif dificuldade_filtrada == "Todas":
+            self.dificuldade_filtrada= "Todas"
+        else:
+            self.dificuldade_filtrada = ""
+        print(self.dificuldade_filtrada)
+
+    def filtrar_pergunta(self):
+        if self.disciplina_filtrada == "" and self.dificuldade_filtrada == "":
+            msgbox.showerror("Erro", "Selecione pelo menos um filtro")
+        elif self.disciplina_filtrada == "Todas" and self.dificuldade_filtrada == "Todas":
+            try:
+                # Limpar a treeview antes de adicionar novos dados
+                for item in self.tree.get_children():
+                    self.tree.delete(item)
+                    
+                self.registros = self.banco.carregar_dados()
+
+                for linha in self.registros:
+                    linha_limpa = tuple(str(item).strip("(),'\"") for item in linha)
+                    self.tree.insert("", "end", values=linha_limpa)
+            except Exception as e:
+                print("Erro ao carregar dados:", e)
+
+        else: 
+            try:
+                # Limpar a treeview antes de adicionar novos dados
+                for item in self.tree.get_children():
+                    self.tree.delete(item)
+                    
+                self.registros = self.banco.filtrar_perguntas(self.disciplina_filtrada,self.dificuldade_filtrada)
+
+                for linha in self.registros:
+                    linha_limpa = tuple(str(item).strip("(),'\"") for item in linha)
+                    self.tree.insert("", "end", values=linha_limpa)
+            except Exception as e:
+                print("Erro ao carregar dados:", e)
+
     def cadastrar_pergunta(self):
         pergunta = self.input_pergunta.get()
         alt_a = self.input_alt_a.get()
@@ -1466,8 +1544,16 @@ class PerguntasProfessor(BaseFrame):
             
             # Atualizar a lista de perguntas
             self.mostrar_dados()
+
+    
         except Exception as e:
             msgbox.showerror("Erro", f"Erro ao cadastrar pergunta:\n{e}")
+
+    def adicionar_materia(self):
+        if self.input_nova_disciplina.get() == "":
+            msgbox.showerror("Erro", "Digite alguma disciplina para cadastro!")
+        else:
+            self.controller.banco.cadastrar_materia(self.input_nova_disciplina.get())
 
     
 
