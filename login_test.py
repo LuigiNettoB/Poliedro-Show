@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from app import Login, App  # ajuste o nome conforme o seu arquivo .py
+from app import Login, App  
 import tkinter.messagebox as msgbox
 
 @pytest.fixture

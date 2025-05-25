@@ -1,7 +1,7 @@
 import pytest
 from customtkinter import CTk
 from unittest.mock import Mock, patch
-from app import Cadastro  # ajuste conforme o nome real do arquivo
+from app import Cadastro  
 
 @pytest.fixture
 def mock_controller():
@@ -13,7 +13,7 @@ def mock_controller():
 @pytest.fixture
 def app():
     root = CTk()
-    root.withdraw()  # oculta janela
+    root.withdraw()  
     yield root
     root.destroy()
 
