@@ -73,6 +73,10 @@ class BancoDeDados:
 
         except Exception as e:
             print(f"Erro ao inserir perguntas: {e}")
+
+    def carregar_estatisticas(self,id_jogador):
+        self.cursor.execute("SELECT pontuacao_max, tempo_medio, num_acertos, qntd_jogos FROM Usuario WHERE id = ?", (id_jogador,))
+        return self.cursor.fetchall()[0]
     
     def login_usuario(self, email, senha):
         self.cursor.execute('SELECT * FROM Usuario WHERE email = ? AND senha = ?', (email, senha))
@@ -146,9 +150,9 @@ class BancoDeDados:
             except Exception as e:
                 print(f"Erro: {e}")
 
-    def deletar_pergunta(self, id):
+    def deletar_pergunta(self, id_jogador):
         try:
-            self.cursor.execute('DELETE FROM Pergunta WHERE id = ?', (id,))
+            self.cursor.execute('DELETE FROM Pergunta WHERE id = ?', (id_jogador,))
             self.conexao.commit()
             print("Deletado com sucesso")
         except Exception as e:
@@ -217,6 +221,7 @@ class BaseFrame(CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        
 
 class Login(BaseFrame):
     def __init__(self, parent, controller):
@@ -236,6 +241,8 @@ class Login(BaseFrame):
         self.side_label = None
         self.current_img = None
 
+        
+
         self.criar_tela()
 
     def criar_tela(self):
@@ -249,6 +256,7 @@ class Login(BaseFrame):
                                light_image=Image.open("imagens/olho-senha.png"), size=(17, 17))
         self.closed_eye = CTkImage(dark_image=Image.open("imagens/ocultar-senha.png"),
                                light_image=Image.open("imagens/ocultar-senha.png"), size=(17, 17))
+
 
         # Frame lateral com imagem
         self.left_frame = CTkFrame(self, fg_color="#ffffff")
@@ -310,6 +318,13 @@ class Login(BaseFrame):
         CTkButton(self.frame_login, text="Ainda não tem conta? Cadastre-se", fg_color="#D22D23", hover_color="#942019",
                   font=("courier new", 14,"bold"), text_color="#ffffff", image=signup_icon,
                   command=lambda: self.controller.show_frame(Cadastro), height=45).grid(row=7, column=0, sticky="ew", pady=(10,0))
+        
+        imagem = CTkImage(dark_image=Image.open("imagens/logo-poliedro-1.png"),
+                      light_image=Image.open("imagens/logo-poliedro-1.png"),
+                      size=(80, 80))
+        
+        imagem_label = CTkLabel(self, image=imagem, text="")
+        imagem_label.place(relx=1.0, rely=1.0, x=-100, y=-100)
 
 
     def toggle_senha(self):
@@ -339,6 +354,7 @@ class Login(BaseFrame):
         if valores:
             msgbox.showinfo("Sucesso", "Login bem-sucedido!")
             dados = self.controller.banco.carregar_dados_jogador(email)[0]
+            self.controller.frames[Perguntas].estatisticas_banco = self.controller.frames[Perguntas].carregar_dados_usuario()
             
             # Preenche os dados do usuário de forma estruturada
             self.controller.usuario_logado = {
@@ -581,6 +597,11 @@ class Jogadores(BaseFrame):
         self.pack_propagate(0)
         self.criar_tela()
         self.banco = controller.banco
+        self.estatisticas = []
+        self.pontuacao_max=""
+        self.tempo_medio = ""
+        self.num_acertos = ""
+        self.qntd_jogos = ""
         self.mostrar_dados()
 
         self.grid_rowconfigure(0, weight=1)
@@ -588,16 +609,35 @@ class Jogadores(BaseFrame):
         self.grid_columnconfigure(1, weight=1, uniform="grupo")
 
     def criar_tela(self):
+        
         self.left_frame = CTkFrame(self, fg_color="#1E1E1E")
         self.left_frame.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         self.left_frame.grid_columnconfigure(0, weight=1)
-        self.left_frame.grid_columnconfigure(1, weight=1)
-        self.left_frame.grid_columnconfigure(2, weight=1)
 
         self.right_frame = CTkFrame(self, fg_color="#1E1E1E", corner_radius=0)
         self.right_frame.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
         self.right_frame.grid_rowconfigure(1, weight=1)
         self.right_frame.grid_columnconfigure(0, weight=1)
+
+        CTkButton(self.left_frame, height=35, width=70, text="<<<<", fg_color="#D22D23",hover_color="#942019", text_color="#ffffff",border_color="#DB453D", border_width=3,
+                  command=lambda: self.controller.show_frame(CentralProfessor), font=("courier new",18,"bold")).place(x=15, y=15)
+
+        CTkLabel(self.left_frame, text="Maior Pontuação: ", text_color="#ffffff", font=("courier new",18,"bold")).grid(row=0, column=0, padx=30, pady=(100,0))
+        self.frame_pontuacao = CTkButton(self.left_frame, text=" ", font=("courier new",18,"bold"), text_color="#ffffff", height=55, fg_color="#25734D", hover_color="#25734D",corner_radius=11, border_color="#34A16D", border_width=3)
+        self.frame_pontuacao.grid(row=1, column=0, padx=80, pady=10, sticky="ew")
+
+        CTkLabel(self.left_frame, text="Tempo médio por pergunta: ", text_color="#ffffff", font=("courier new",18,"bold")).grid(row=2, column=0, padx=30, pady=8)
+        self.frame_tempo_medio = CTkButton(self.left_frame, text=" ", font=("courier new",18,"bold"), text_color="#ffffff", height=55, fg_color="#25734D", hover_color="#25734D",corner_radius=11, border_color="#34A16D", border_width=3)
+        self.frame_tempo_medio.grid(row=3, column=0, padx=80, pady=10, sticky="ew")
+
+        CTkLabel(self.left_frame, text="Número máximo de acertos consecutivos: ", text_color="#ffffff", font=("courier new",18,"bold")).grid(row=4, column=0, padx=30, pady=8)
+        self.frame_num_acertos = CTkButton(self.left_frame, text=" ", font=("courier new",18,"bold"), text_color="#ffffff", height=55, fg_color="#25734D", hover_color="#25734D",corner_radius=11, border_color="#34A16D", border_width=3)
+        self.frame_num_acertos.grid(row=5, column=0, padx=80, pady=10, sticky="ew")
+
+        CTkLabel(self.left_frame, text="Quantidade de jogos: ", text_color="#ffffff", font=("courier new",18,"bold")).grid(row=6, column=0, padx=30, pady=8)
+        self.frame_qntd_jogos = CTkButton(self.left_frame, text=" ", font=("courier new",18,"bold"), text_color="#ffffff", height=55, fg_color="#25734D", hover_color="#25734D",corner_radius=11, border_color="#34A16D", border_width=3 )
+        self.frame_qntd_jogos.grid(row=7, column=0, padx=80, pady=10, sticky="ew")
+
 
 
         colunas = ("ID","Nome","Email", "Turma")
@@ -607,7 +647,7 @@ class Jogadores(BaseFrame):
             self.tree.heading(col, text=col)
             self.tree.column(col, width=100, anchor="center")
 
-        self.tree.grid(row=1, column=0, sticky="nsew")
+        self.tree.grid(row=1, column=0, sticky="nsew", pady=10)
 
         scrollbar_y = ttk.Scrollbar(self.right_frame, orient="vertical", command=self.tree.yview)
         scrollbar_y.grid(row=1, column=1, sticky="ns")
@@ -617,6 +657,10 @@ class Jogadores(BaseFrame):
 
         self.tree.configure(yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set)
 
+        self.btn_mostrar_estatisticas = CTkButton(self.right_frame, text="CARREGAR ESTATÍSTICAS", text_color="#ffffff", height=60, command=self.mostrar_estatisticas, fg_color="#FF9700", hover_color="#c27402",corner_radius=11, border_color="#FFBB00", border_width=3, font=("courier new",18,"bold") )
+        self.btn_mostrar_estatisticas.grid(row=3, column=0, sticky="ew", pady=15)
+
+        
 
     def mostrar_dados(self):
         try:
@@ -631,6 +675,33 @@ class Jogadores(BaseFrame):
                 self.tree.insert("", "end", values=linha_limpa)
         except Exception as e:
             print("Erro ao carregar dados:", e)
+
+    def mostrar_estatisticas(self):
+        jogador_selecionado = self.tree.selection()
+        
+        if not jogador_selecionado:
+            msgbox.showwarning("Aviso", "Por favor, selecione um jogador da lista.")
+            return
+
+        item_id = jogador_selecionado[0]
+        valores_selecionados = self.tree.item(item_id)['values']
+
+        if not valores_selecionados:
+            msgbox.showerror("Erro", "Erro ao obter os dados do jogador selecionado.")
+            return
+
+        id_jogador = valores_selecionados[0]
+        self.estatisticas = self.controller.banco.carregar_estatisticas(id_jogador)
+        self.pontuacao_max = self.estatisticas[0]
+        self.tempo_medio = f"{self.estatisticas[1]:.2f}"
+        self.num_acertos = self.estatisticas[2]
+        self.qntd_jogos = self.estatisticas[3]
+
+        self.frame_pontuacao.configure(text=self.pontuacao_max)
+        self.frame_tempo_medio.configure(text=self.tempo_medio)
+        self.frame_num_acertos.configure(text=self.num_acertos)
+        self.frame_qntd_jogos.configure(text=self.qntd_jogos)
+
         
 
 class MateriasJogo(BaseFrame):
@@ -658,7 +729,7 @@ class MateriasJogo(BaseFrame):
 
         # Título centralizado
         CTkLabel(master=self, text="Escolha a matéria para o seu jogo: ",
-                font=("courier new", 22, "bold")).grid(column=0, row=0, pady=(300, 30), sticky="n")
+                font=("courier new", 22, "bold"),text_color="#ffffff").grid(column=0, row=0, pady=(300, 30), sticky="n")
 
         # Frame das disciplinas centralizado
         self.frame_disciplinas = CTkFrame(self, fg_color="transparent", corner_radius=0)
@@ -943,33 +1014,39 @@ class Perguntas(BaseFrame):
         self.pontuacao = 0
         self.checkpoint_atingido = False
         self.materia_selecionada = None
+        self.id_usuario=" "
+        self.estatisticas_banco = []
         
         # Variáveis para estatísticas
         self.tempos_respostas = []
         self.acertos_consecutivos = 0
         self.maior_acerto_consecutivo = 0
-        self.carregar_dados_usuario()
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=4)
         self.grid_columnconfigure(1, weight=1)
 
         self.criar_tela()
-        print(self.materia_atual)
 
     def carregar_dados_usuario(self):
         """Carrega os dados do usuário do banco de dados"""
         dados_usuario = self.controller.banco.get_dados_jogo()
-        if dados_usuario and len(dados_usuario) >= 9:
-            self.pontuacao_max = dados_usuario[5] if dados_usuario[5] is not None else 0
-            self.tempo_medio = dados_usuario[6] if dados_usuario[6] is not None else 0
-            self.num_acertos = dados_usuario[7] if dados_usuario[7] is not None else 0
-            self.qntd_jogos = dados_usuario[8] if dados_usuario[8] is not None else 0
+        print(dados_usuario)
+        if dados_usuario and len(dados_usuario) >= 5:
+            self.pontuacao_max = dados_usuario[1] 
+            self.tempo_medio = dados_usuario[2] 
+            self.num_acertos = dados_usuario[3]
+            self.qntd_jogos = dados_usuario[4]
         else:
             self.pontuacao_max = 0
             self.tempo_medio = 0
             self.num_acertos = 0
             self.qntd_jogos = 0
+        print(f"Pont: {self.pontuacao_max}")
+        print(f"Tempo: {self.tempo_medio}")
+        print(f"Num: {self.num_acertos}")
+        print(f"Qtd: {self.qntd_jogos}")
+
 
     def atualizar_dados_usuario(self):
         """Atualiza os dados do usuário no banco de dados"""
@@ -995,7 +1072,7 @@ class Perguntas(BaseFrame):
         if not self.tempos_respostas:
             return self.tempo_medio
         
-        tempo_atual = sum(self.tempos_respostas) / len(self.tempos_respostas)
+        tempo_atual = sum(self.tempos_respostas[1:]) / len(self.tempos_respostas[1:])
         
         if self.tempo_medio == 0:
             return tempo_atual
@@ -1588,7 +1665,6 @@ class PerguntasProfessor(BaseFrame):
             self.controller.banco.cadastrar_materia(self.input_nova_disciplina.get())
 
     
-
 
 if __name__ == "__main__":
     app = App()
