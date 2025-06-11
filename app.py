@@ -10,6 +10,9 @@ import random
 import time
 import tkinter.messagebox as msgbox
 import tkinter.ttk as ttk
+import customtkinter
+from customtkinter import CTkFont, CTkImage # Importações necessárias
+from PIL import Image # Necessário para carregar as imagens
 
 
 class BancoDeDados:
@@ -41,21 +44,22 @@ class BancoDeDados:
             ''', (pontuacao_max, tempo_medio, num_acertos, qntd_jogos, email))
             self.conexao.commit()
             print("Estatísticas do usuário atualizadas com sucesso!")
-            
-            # Atualiza os dados locais também
+        
+            # CORREÇÃO: Atualiza os dados locais preservando a estrutura correta do tuple
             if self.usuario_atual:
                 self.usuario_atual = (
                     self.usuario_atual[0],  # id
                     self.usuario_atual[1],  # nome
                     self.usuario_atual[2],  # email
-                    self.usuario_atual[3],  # turma
-                    self.usuario_atual[4],  # senha
+                    self.usuario_atual[3],  # senha
+                    self.usuario_atual[4],  # turma
+                    self.usuario_atual[5],  # professor
                     pontuacao_max,
                     tempo_medio,
                     num_acertos,
                     qntd_jogos
                 )
-                self.dados_jogo = self.usuario_atual[5:]
+                self.dados_jogo = self.usuario_atual[6:]
         except Exception as e:
             print(f"Erro ao atualizar estatísticas do usuário: {e}")
 
@@ -130,7 +134,8 @@ class BancoDeDados:
         self.dados_usuario = self.cursor.fetchall()
         if self.dados_usuario:
             self.usuario_atual = self.dados_usuario[0]
-            self.dados_jogo = self.dados_usuario[0][5:] if len(self.dados_usuario[0]) > 5 else []
+            # CORREÇÃO: As estatísticas começam no índice 6 (após id, nome, email, senha, turma, professor)
+            self.dados_jogo = self.dados_usuario[0][6:] if len(self.dados_usuario[0]) > 6 else []
         return self.dados_usuario
 
     def cadastrar_usuario(self, nome, email, senha, turma, professor):
@@ -635,74 +640,203 @@ class CentralProfessor(BaseFrame):
 class Instrucoes(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
-        self.configure(width=1200, height=780, fg_color="#1E1E1E")
+        self.configure(fg_color="#1E1E1E")
         self.criar_tela()
 
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+    def load_icon(self, path, size):
+        """Função auxiliar para carregar ícones."""
+        try:
+            return CTkImage(Image.open(path), size=size)
+        except FileNotFoundError:
+            # Retorna um placeholder se o ícone não for encontrado
+            print(f"Aviso: Ícone não encontrado em '{path}'.")
+            return None
 
     def criar_tela(self):
-        CTkButton(self, height=35, width=70, text="<<<<", fg_color="#D22D23", hover_color="#942019", text_color="#ffffff",
-                  border_color="#DB453D", border_width=3, command=lambda: self.controller.show_frame(CentralProfessor),
-                  font=("courier new", 18, "bold")).place(x=15, y=15)
+        # --- Configuração de Fontes ---
+        font_titulo_principal = CTkFont("Courier New", 28, "bold")
+        font_titulo_card = CTkFont("Courier New", 22, "bold")
+        font_subtitulo = CTkFont("Courier New", 16, "bold")
+        font_texto = CTkFont("Courier New", 14)
+        font_botao_voltar = CTkFont("Courier New", 18, "bold")
 
-        # Container com scrollbars
-        container = CTkFrame(self, fg_color="#ffffff", corner_radius=15, border_width=3, border_color="#6b6b6b")
-        container.grid(row=0, column=0, sticky="nsew", padx=65, pady=65)
+        # --- Botão para retornar ---
+        btn_voltar = customtkinter.CTkButton(
+            self,
+            height=35,
+            width=70,
+            text="<<<<",
+            fg_color="#D22D23",
+            hover_color="#942019",
+            text_color="#ffffff",
+            border_color="#DB453D",
+            border_width=3,
+            font=font_botao_voltar,
+            command=lambda: self.controller.show_frame(CentralProfessor)
+        )
+        btn_voltar.place(x=30, y=30)
 
-        # Canvas para permitir scroll
-        canvas = Canvas(container, bg="#ffffff", highlightthickness=0)
-        canvas.grid(row=0, column=0, sticky="nsew")
+        # --- Título da página ---
+        titulo_label = customtkinter.CTkLabel(
+            self,
+            text="Instruções e Guia do Professor",
+            font=font_titulo_principal,
+            text_color="#ffffff"
+        )
+        titulo_label.pack(pady=(40, 20))
 
-        # Scrollbars
-        v_scroll = CTkScrollbar(container, orientation="vertical", command=canvas.yview)
-        v_scroll.grid(row=0, column=1, sticky="ns")
-        h_scroll = CTkScrollbar(container, orientation="horizontal", command=canvas.xview)
-        h_scroll.grid(row=1, column=0, sticky="ew")
-
-        # Configurar scroll no canvas
-        canvas.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
-
-        # Frame interno que conterá os widgets
-        scrollable_frame = CTkFrame(canvas, fg_color="#ffffff")
-        scrollable_window = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-
-        # Ajustar expansão
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
-
-        # Atualizar scrollregion automaticamente
-        def configure_scroll_region(event):
-            canvas.configure(scrollregion=canvas.bbox("all"))
-
-        scrollable_frame.bind("<Configure>", configure_scroll_region)
-
-        # Permitir rolagem com o mouse
-        canvas.bind("<MouseWheel>", lambda event: canvas.yview_scroll(int(-1*(event.delta / 120)), "units"))
-
-        # Adicione essa linha para garantir que a coluna expanda corretamente
+        # --- Frame Rolável para o Conteúdo ---
+        scrollable_frame = customtkinter.CTkScrollableFrame(
+            self,
+            fg_color="transparent", # Deixa o fundo transparente para ver a cor da janela
+            label_text="",
+        )
+        scrollable_frame.pack(pady=10, padx=40, fill="both", expand=True)
+        # Configura a grade para que os cards se expandam horizontalmente
         scrollable_frame.grid_columnconfigure(0, weight=1)
 
-        # Alinhamento consistente com sticky="w"
-        CTkLabel(scrollable_frame, text="1. Para cadastrar um novo usuário do tipo professor, basta ir à tela de cadastro e adicionar o novo usuário como Professor (SIM)",
-                font=("courier new", 22, "bold"), text_color="#000000").grid(row=0, column=0, sticky="w", pady=15, padx=15)
-
-        CTkLabel(scrollable_frame, text="2. Para cadastrar uma nova pergunta ou disciplina, vá até Central Professor > Perguntas e preencha os campos necessários",
-                font=("courier new", 22, "bold"), text_color="#000000").grid(row=1, column=0, sticky="w", pady=15, padx=15)
-
-        CTkLabel(scrollable_frame, text="3. Para visualizar as perguntas cadastradas, vá até a tela Central Professor > Perguntas",
-                font=("courier new", 22, "bold"), text_color="#000000").grid(row=2, column=0, sticky="w", pady=15, padx=15)
-
-        CTkLabel(scrollable_frame, text="4. Para filtrar as perguntas cadastradas, vá até Central Professor > Perguntas e aplique os filtros de dificuldade e/ou de disciplina",
-                font=("courier new", 22, "bold"), text_color="#000000").grid(row=3, column=0, sticky="w", pady=15, padx=15)
-
-        CTkLabel(scrollable_frame, text="5. Para visualizar os jogadores cadastrados, vá até a tela Central Professor > Jogadores",
-                font=("courier new", 22, "bold"), text_color="#000000").grid(row=4, column=0, sticky="w", pady=15, padx=15)
-
-        CTkLabel(scrollable_frame, text="6. Para carregar as estatísticas dos jogadores, vá até a tela Central Professor > Jogadores, clique sobre o jogador desejado, e clique sobre o botão de Carregar Estatísticas",
-                font=("courier new", 22, "bold"), text_color="#000000").grid(row=5, column=0, sticky="w", pady=15,padx=15)
-
+        # --- Carregar Ícones ---
+        # ATENÇÃO: Substitua os caminhos abaixo pelos caminhos corretos para seus ícones.
+        icon_aluno_path = "icons/gamepad.png" # Exemplo: ícone de um controle de videogame
+        icon_professor_path = "icons/dashboard.png" # Exemplo: ícone de um painel
         
+        self.icon_aluno = self.load_icon(icon_aluno_path, (32, 32))
+        self.icon_professor = self.load_icon(icon_professor_path, (32, 32))
+
+        # =================================================================
+        # Card 1: Como o Jogo Funciona (Visão do Aluno)
+        # =================================================================
+        card_aluno = customtkinter.CTkFrame(
+            scrollable_frame,
+            fg_color="#2B2B2B",
+            border_width=2,
+            border_color="#FF9700",
+            corner_radius=10
+        )
+        card_aluno.grid(row=0, column=0, sticky="ew", padx=20, pady=(15, 20))
+        card_aluno.grid_columnconfigure(1, weight=1)
+
+        # Cabeçalho do Card 1
+        header_aluno = customtkinter.CTkFrame(card_aluno, fg_color="transparent")
+        header_aluno.grid(row=0, column=0, columnspan=2, sticky="ew", padx=20, pady=(15, 10))
+        
+        label_icon_aluno = customtkinter.CTkLabel(header_aluno, text="", image=self.icon_aluno)
+        label_icon_aluno.pack(side="left", padx=(0, 15))
+
+        titulo_secao1 = customtkinter.CTkLabel(
+            header_aluno,
+            text="Como o Jogo Funciona (Para o Aluno)",
+            font=font_titulo_card,
+            text_color="#FF9700"
+        )
+        titulo_secao1.pack(side="left")
+
+        # Conteúdo do Card 1
+        texto1 = (
+            "O jogo é um quiz no estilo 'Show do Milhão'. O aluno escolhe uma matéria e responde a uma série de perguntas "
+            "com dificuldade progressiva. O jogo continua até o aluno errar, decidir parar ou acertar todas as questões."
+        )
+        conteudo1 = customtkinter.CTkLabel(
+            card_aluno,
+            text=texto1,
+            font=font_texto,
+            text_color="#E0E0E0",
+            wraplength=800,
+            justify="left"
+        )
+        conteudo1.grid(row=1, column=0, columnspan=2, sticky="ew", padx=20, pady=(0, 15))
+
+        subtitulo_ajudas = customtkinter.CTkLabel(
+            card_aluno,
+            text="Ajudas Disponíveis (uma por jogo):",
+            font=font_subtitulo,
+            text_color="#FFFFFF"
+        )
+        subtitulo_ajudas.grid(row=2, column=0, columnspan=2, sticky="w", padx=20, pady=(10, 5))
+
+        texto_ajudas = (
+            "  •  DICA: Exibe uma pista sobre a pergunta atual.\n"
+            "  •  50/50: Remove duas das alternativas incorretas.\n"
+            "  •  PULAR: Avança para a próxima pergunta sem sofrer penalidades."
+        )
+        conteudo_ajudas = customtkinter.CTkLabel(
+            card_aluno,
+            text=texto_ajudas,
+            font=font_texto,
+            text_color="#E0E0E0",
+            wraplength=800,
+            justify="left"
+        )
+        conteudo_ajudas.grid(row=3, column=0, columnspan=2, sticky="ew", padx=20, pady=(0, 20))
+
+        # =================================================================
+        # Card 2: Guia do Painel do Professor
+        # =================================================================
+        card_professor = customtkinter.CTkFrame(
+            scrollable_frame,
+            fg_color="#2B2B2B",
+            border_width=2,
+            border_color="#00A2FF", 
+            corner_radius=10
+        )
+        card_professor.grid(row=1, column=0, sticky="ew", padx=20, pady=(10, 20))
+        card_professor.grid_columnconfigure(1, weight=1)
+
+        # Cabeçalho do Card 2
+        header_professor = customtkinter.CTkFrame(card_professor, fg_color="transparent")
+        header_professor.grid(row=0, column=0, columnspan=2, sticky="ew", padx=20, pady=(15, 10))
+
+        label_icon_professor = customtkinter.CTkLabel(header_professor, text="", image=self.icon_professor)
+        label_icon_professor.pack(side="left", padx=(0, 15))
+        
+        titulo_secao2 = customtkinter.CTkLabel(
+            header_professor,
+            text="Guia do Painel do Professor",
+            font=font_titulo_card,
+            text_color="#00A2FF"
+        )
+        titulo_secao2.pack(side="left")
+
+        # Conteúdo do Card 2 (dividido por ferramenta)
+        texto_ferramentas = {
+            "1. GERENCIAR PERGUNTAS:": (
+                "Adicione novas perguntas no formulário à esquerda. Todos os campos são obrigatórios.\n"
+                "Visualize, filtre por 'Disciplina' e 'Dificuldade', ou delete questões na tabela à direita."
+            ),
+            "2. VER JOGADORES:": (
+                "Acesse a lista de todos os usuários cadastrados (alunos e professores).\n"
+                "Clique em um usuário e depois em 'CARREGAR ESTATÍSTICAS' para ver seu desempenho detalhado."
+            ),
+            "3. VER INSTRUÇÕES:": (
+                "É esta tela que você está visualizando agora, um guia completo de todas as funcionalidades."
+            )
+        }
+
+        # Cria o conteúdo dinamicamente
+        current_row = 1
+        for subtitulo, texto in texto_ferramentas.items():
+            lbl_subtitulo = customtkinter.CTkLabel(
+                card_professor,
+                text=subtitulo,
+                font=font_subtitulo,
+                text_color="#FFFFFF",
+                justify="left"
+            )
+            lbl_subtitulo.grid(row=current_row, column=0, columnspan=2, sticky="w", padx=20, pady=(15, 2))
+            
+            lbl_texto = customtkinter.CTkLabel(
+                card_professor,
+                text=texto,
+                font=font_texto,
+                text_color="#E0E0E0",
+                wraplength=800,
+                justify="left"
+            )
+            lbl_texto.grid(row=current_row + 1, column=0, columnspan=2, sticky="w", padx=20, pady=(0, 5))
+            current_row += 2
+        
+        # Adiciona um preenchimento final no card
+        card_professor.grid_rowconfigure(current_row, minsize=10)
 
 
 
@@ -1046,26 +1180,32 @@ class Menu(BaseFrame):
             self.menu_img_atual = CTkImage(dark_image=resized_pil, light_image=resized_pil, size=(resized_pil.width, altura_desejada))
             self.menu_img_label.configure(image=self.menu_img_atual)
 
+
+
 class Perguntas(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         self.configure(width=1200, height=780, fg_color="#ffffff")
         self.pack_propagate(0)
+        
+        # Inicializa os atributos antes de usá-los
+        self.pontuacao_max = 0
+        self.tempo_medio = 0.0
+        self.num_acertos = 0
+        self.qntd_jogos = 0
+        
         self.materia_atual = self.controller.banco.mostrar_materia_atual()[0][0]
         self.perguntas = self.obter_perguntas()
         self.indice_pergunta = 0
         self.ajuda_dica_usada = False
         self.ajuda_50_usada = False
         self.ajuda_pular_usada = False
-        self.pontos = [1000,2000,3000,5000,10000,20000,30000,50000,100000,150000,200000,300000,400000,500000,750000,1000000]
+        self.pontos = [1000, 2000, 3000, 5000, 10000, 20000, 30000, 50000, 100000, 150000, 200000, 300000, 400000, 500000, 750000, 1000000]
         self.i_pontos = 0
         self.pontuacao = 0
         self.checkpoint_atingido = False
-        self.materia_selecionada = None
-        self.id_usuario=" "
-        self.estatisticas_banco = []
         
-        # Variáveis para estatísticas
+        # Variáveis para estatísticas da sessão atual
         self.tempos_respostas = []
         self.acertos_consecutivos = 0
         self.maior_acerto_consecutivo = 0
@@ -1075,37 +1215,40 @@ class Perguntas(BaseFrame):
         self.grid_columnconfigure(1, weight=1)
 
         self.criar_tela()
+        self.carregar_dados_usuario() # Carrega os dados ao iniciar o frame
 
     def carregar_dados_usuario(self):
-        """Carrega os dados do usuário do banco de dados"""
+        """Carrega os dados do usuário do banco de dados de forma segura."""
         dados_usuario = self.controller.banco.get_dados_jogo()
-        print(dados_usuario)
-        if dados_usuario and len(dados_usuario) >= 5:
-            self.pontuacao_max = dados_usuario[1] 
-            self.tempo_medio = dados_usuario[2] 
-            self.num_acertos = dados_usuario[3]
-            self.qntd_jogos = dados_usuario[4]
+        
+        if dados_usuario and len(dados_usuario) >= 4:
+            # CORREÇÃO: Converte para o tipo correto e lida com valores None
+            self.pontuacao_max = int(dados_usuario[0] or 0)
+            self.tempo_medio = float(dados_usuario[1] or 0.0)
+            self.num_acertos = int(dados_usuario[2] or 0)
+            self.qntd_jogos = int(dados_usuario[3] or 0)
         else:
             self.pontuacao_max = 0
-            self.tempo_medio = 0
+            self.tempo_medio = 0.0
             self.num_acertos = 0
             self.qntd_jogos = 0
-        print(f"Pont: {self.pontuacao_max}")
-        print(f"Tempo: {self.tempo_medio}")
-        print(f"Num: {self.num_acertos}")
-        print(f"Qtd: {self.qntd_jogos}")
-
+        
+        print("Estatísticas carregadas:", self.pontuacao_max, self.tempo_medio, self.num_acertos, self.qntd_jogos)
 
     def atualizar_dados_usuario(self):
         """Atualiza os dados do usuário no banco de dados"""
-        if hasattr(self.controller.banco, 'usuario_atual') and len(self.controller.banco.usuario_atual) > 2:
+        if hasattr(self.controller.banco, 'usuario_atual') and self.controller.banco.usuario_atual:
             email = self.controller.banco.usuario_atual[2]
             
-            # Calcula os novos valores
-            nova_pontuacao_max = max(self.pontuacao, self.pontuacao_max)
+            # Garante que os valores sejam numéricos antes de calcular
+            pontuacao_max_historica = self.pontuacao_max or 0
+            num_acertos_historico = self.num_acertos or 0
+            qntd_jogos_historica = self.qntd_jogos or 0
+
+            nova_pontuacao_max = max(self.pontuacao, pontuacao_max_historica)
             novo_tempo_medio = self.calcular_tempo_medio()
-            novo_num_acertos = max(self.maior_acerto_consecutivo, self.num_acertos)
-            nova_qntd_jogos = self.qntd_jogos + 1
+            novo_num_acertos = max(self.maior_acerto_consecutivo, num_acertos_historico)
+            nova_qntd_jogos = qntd_jogos_historica + 1
             
             self.controller.banco.atualizar_estatisticas_usuario(
                 email, 
@@ -1116,18 +1259,29 @@ class Perguntas(BaseFrame):
             )
 
     def calcular_tempo_medio(self):
-        """Calcula o tempo médio por pergunta"""
+        """Calcula o novo tempo médio geral de forma segura."""
+        tempo_medio_historico = self.tempo_medio or 0.0
+        qntd_jogos_historico = self.qntd_jogos or 0
+
         if not self.tempos_respostas:
-            return self.tempo_medio
+            return tempo_medio_historico
+
+        tempo_medio_sessao = sum(self.tempos_respostas) / len(self.tempos_respostas)
+
+        if qntd_jogos_historico == 0:
+            return tempo_medio_sessao
         
-        tempo_atual = sum(self.tempos_respostas[1:]) / len(self.tempos_respostas[1:])
-        
-        if self.tempo_medio == 0:
-            return tempo_atual
-        
-        return (self.tempo_medio + tempo_atual) / 2
+        # Média ponderada
+        novo_total_de_jogos = qntd_jogos_historico + 1
+        novo_tempo_medio = ((tempo_medio_historico * qntd_jogos_historico) + tempo_medio_sessao) / novo_total_de_jogos
+        return novo_tempo_medio
+    
+    # O restante dos seus métodos na classe Perguntas (obter_perguntas, criar_tela, verificar_resposta, etc.)
+    # pode permanecer como na sua última versão, pois o erro principal estava no carregamento e 
+    # cálculo dos dados. Apenas cole o corpo desta classe inteira para garantir.
 
     def obter_perguntas(self):
+        # (Seu código original aqui - sem alterações)
         conexao = sqlite3.connect("PI.db")
         cursor = conexao.cursor()
         
@@ -1166,6 +1320,7 @@ class Perguntas(BaseFrame):
         return self.perguntas
 
     def criar_tela(self):
+        # (Seu código original aqui - sem alterações)
         self.left_frame = CTkFrame(self, fg_color="#3B3B3B", corner_radius=0)
         self.left_frame.grid(row=0, column=0, sticky="nsew")
         self.left_frame.grid_propagate(False)
@@ -1183,7 +1338,7 @@ class Perguntas(BaseFrame):
         self.frame_pergunta.grid(column=0, row=0, sticky="nsew", padx=25, pady=(25, 0))
         self.frame_pergunta.grid_propagate(False)
 
-        self.texto_pergunta = CTkLabel(self.frame_pergunta, text="", font=("courier new", 22, "bold"), text_color="#ffffff")
+        self.texto_pergunta = CTkLabel(self.frame_pergunta, text="", font=("courier new", 22, "bold"), text_color="#ffffff", wraplength=800)
         self.texto_pergunta.grid(column=0, row=0, sticky="ew", pady=25, padx=25)
 
         self.texto_dica = CTkLabel(self.frame_pergunta, text="", font=("courier new", 18, "bold"), text_color="#ffffff")
@@ -1197,8 +1352,8 @@ class Perguntas(BaseFrame):
         self.botoes_alternativas = []
         for i in range(4):
             botao = CTkButton(self.frame_botoes, text="", fg_color="#FF9700", font=("courier new", 25, "bold"),
-                            text_color="#FFFFFF", corner_radius=10,
-                            command=lambda i=i: self.verificar_resposta(i), hover_color="#c27402", border_color="#FFBB00")
+                                text_color="#FFFFFF", corner_radius=10,
+                                command=lambda i=i: self.verificar_resposta(i), hover_color="#c27402", border_color="#FFBB00")
             botao.grid(row=i, column=0, sticky="nsew", pady=(10 if i > 0 else 0, 0))  
             self.botoes_alternativas.append(botao)
 
@@ -1206,21 +1361,21 @@ class Perguntas(BaseFrame):
         self.botão_pontuação.grid(column=0, row=0, padx=15, pady=(40,60), sticky="ew")
 
         self.botao_ajuda_dica = CTkButton(self.right_frame, text="DICA", font=("courier new", 20, "bold"), fg_color="#25734D", 
-                                        text_color="#ffffff",  height=80, command=self.mostrar_dica, corner_radius=10, hover_color="#14402b", border_color="#34A16D",  border_width=3)
+                                            text_color="#ffffff",  height=80, command=self.mostrar_dica, corner_radius=10, hover_color="#14402b", border_color="#34A16D",  border_width=3)
         self.botao_ajuda_dica.grid(row=1, column=0, padx=15, pady=10, sticky="ew")
 
         self.botao_ajuda_50 = CTkButton(self.right_frame, text="50% / 50%", font=("courier new", 20, "bold"), fg_color="#25734D", 
-                                    text_color="#ffffff",  height=80, command=self.eliminar_alternativas, corner_radius=10, hover_color="#14402b", border_color="#34A16D",  border_width=3)
+                                        text_color="#ffffff",  height=80, command=self.eliminar_alternativas, corner_radius=10, hover_color="#14402b", border_color="#34A16D",  border_width=3)
         self.botao_ajuda_50.grid(row=2, column=0, padx=15, pady=10, sticky="ew")
         
         self.botao_ajuda_pular = CTkButton(self.right_frame, text="PULAR", font=("courier new", 20, "bold"), fg_color="#25734D", 
-                                        text_color="#ffffff",  height=80, command=self.pular_pergunta, corner_radius=10, hover_color="#14402b", border_color="#34A16D",  border_width=3)
+                                            text_color="#ffffff",  height=80, command=self.pular_pergunta, corner_radius=10, hover_color="#14402b", border_color="#34A16D",  border_width=3)
         self.botao_ajuda_pular.grid(row=3, column=0, padx=15, pady=(10,40), sticky="ew")
         
         self.botao_encerrar = CTkButton(self.right_frame, text="ENCERRAR", 
-                                    font=("courier new", 20, "bold"), fg_color="#D22D23", 
-                                    text_color="#ffffff",  height=150, 
-                                    command=self.mostrar_janela_fim_jogo, corner_radius=10, hover_color="#942019",border_color="#DB453D", border_width=3)
+                                        font=("courier new", 20, "bold"), fg_color="#D22D23", 
+                                        text_color="#ffffff",  height=150, 
+                                        command=self.mostrar_janela_fim_jogo, corner_radius=10, hover_color="#942019",border_color="#DB453D", border_width=3)
         self.botao_encerrar.grid(row=4, column=0, padx=15, pady=(40,25), sticky="ew")
 
         self.game_over_frame = CTkFrame(self.left_frame, width=800, height=500, fg_color="#ffffff", corner_radius=10)
@@ -1232,9 +1387,11 @@ class Perguntas(BaseFrame):
         self.carregar_pergunta()
 
     def dados_jogo(self):
+        # (Seu código original aqui - sem alterações)
         return self.controller.banco.get_dados_jogo()
     
     def carregar_pergunta(self):
+        # (Seu código original aqui - sem alterações)
         self.game_over_frame.pack_forget()
         self.tempo_pergunta_inicio = time.time()
         
@@ -1254,28 +1411,42 @@ class Perguntas(BaseFrame):
                 botao.pack_forget()
 
     def imprimir_estatisticas(self):
-        """Imprime as estatísticas do jogo no terminal"""
+        """Imprime as estatísticas do jogo no terminal de forma segura."""
+
+        # CORREÇÃO: Calcula a média da sessão de forma segura, sem fatiar a lista
+        tempo_medio_sessao_str = "N/A"
+        if self.tempos_respostas:  # Garante que a lista não está vazia
+            # Calcula a média usando o tamanho TOTAL da lista
+            tempo_medio_sessao = sum(self.tempos_respostas) / len(self.tempos_respostas)
+            tempo_medio_sessao_str = f"{tempo_medio_sessao:.2f}s"
+
+        # Garante que os valores históricos sejam numéricos para evitar outros erros
+        pontuacao_max_historica = self.pontuacao_max or 0
+        num_acertos_historico = self.num_acertos or 0
+    
         estatisticas = {
             "Pontuação atual": self.pontuacao,
-            "Pontuação máxima anterior": self.pontuacao_max,
-            "Nova pontuação máxima": max(self.pontuacao, self.pontuacao_max),
-            "Tempo médio por pergunta (esta sessão)": f"{sum(self.tempos_respostas[1:])/len(self.tempos_respostas[1:]):.2f}s" if self.tempos_respostas else "N/A",
+            "Pontuação máxima anterior": pontuacao_max_historica,
+            "Nova pontuação máxima": max(self.pontuacao, pontuacao_max_historica),
+            "Tempo médio por pergunta (esta sessão)": tempo_medio_sessao_str, # Usa a variável segura
             "Tempo médio histórico": f"{self.tempo_medio:.2f}s",
             "Novo tempo médio": f"{self.calcular_tempo_medio():.2f}s",
             "Maior sequência de acertos (esta sessão)": self.maior_acerto_consecutivo,
-            "Maior sequência de acertos (histórico)": self.num_acertos,
-            "Nova maior sequência de acertos": max(self.maior_acerto_consecutivo, self.num_acertos),
-            "Total de jogos (incluindo este)": self.qntd_jogos + 1
+            "Maior sequência de acertos (histórico)": num_acertos_historico,
+            "Nova maior sequência de acertos": max(self.maior_acerto_consecutivo, num_acertos_historico),
+            "Total de jogos (incluindo este)": (self.qntd_jogos or 0) + 1
         }
-        
+    
         print("\n" + "="*50)
         print("ESTATÍSTICAS DO JOGO".center(50))
         print("="*50)
         for chave, valor in estatisticas.items():
-            print(f"{chave}:".ljust(35) + f"{valor}".rjust(15))
+            # Usa str() para garantir que todos os valores possam ser formatados
+            print(f"{str(chave):<40} {str(valor):>9}")
         print("="*50 + "\n")
     
     def mostrar_dica(self):
+        # (Seu código original aqui - sem alterações)
         if not self.ajuda_dica_usada:
             self.ajuda_dica_usada = True
             self.botao_ajuda_dica.configure(state="disabled", fg_color="#888888")
@@ -1283,6 +1454,7 @@ class Perguntas(BaseFrame):
             self.texto_dica.configure(text=pergunta_atual["dica"])
     
     def eliminar_alternativas(self):
+        # (Seu código original aqui - sem alterações)
         if not self.ajuda_50_usada:
             self.ajuda_50_usada = True
             self.botao_ajuda_50.configure(state="disabled", fg_color="#888888")
@@ -1293,6 +1465,7 @@ class Perguntas(BaseFrame):
                 botao.configure(state="disabled", fg_color="#D22D23", border_color="#DB453D")
     
     def pular_pergunta(self):
+        # (Seu código original aqui - sem alterações)
         if not self.ajuda_pular_usada:
             self.ajuda_pular_usada = True
             self.botao_ajuda_pular.configure(state="disabled", fg_color="#888888")
@@ -1300,6 +1473,7 @@ class Perguntas(BaseFrame):
             self.carregar_pergunta()
     
     def verificar_resposta(self, indice):
+        # (Seu código original aqui - sem alterações)
         tempo_resposta = time.time() - self.tempo_pergunta_inicio
         print(f"{tempo_resposta:.0f}")
         self.tempos_respostas.append(tempo_resposta)
@@ -1344,6 +1518,7 @@ class Perguntas(BaseFrame):
                 self.mostrar_janela_fim_jogo()
 
     def mostrar_janela_fim_jogo(self):
+        # (Seu código original aqui - sem alterações)
         self.imprimir_estatisticas()
         self.usuario_atual = self.controller.banco.get_usuario_atual()
         self.professor = self.usuario_atual[5]
@@ -1378,8 +1553,9 @@ class Perguntas(BaseFrame):
 
         CTkButton(janela, text="Recomeçar Jogo", font=("courier new", 16,"bold"), fg_color="#25734D",hover_color="#14402b", border_color="#34A16D",  border_width=3, 
                 command=recomeçar_jogo, width=200, height=30).pack(pady=10)
-        
+    
     def reiniciar_jogo(self):
+        # (Seu código original aqui - sem alterações)
         self.perguntas = self.obter_perguntas()
         self.indice_pergunta = 0
         self.ajuda_dica_usada = False
@@ -1401,6 +1577,7 @@ class Perguntas(BaseFrame):
         self.carregar_pergunta()
 
     def mostrar_janela_jogo_concluido(self):
+        # (Seu código original aqui - sem alterações)
         self.atualizar_dados_usuario()
         self.imprimir_estatisticas()
         self.usuario_atual = self.controller.banco.get_usuario_atual()
