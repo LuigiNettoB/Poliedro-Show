@@ -1,5 +1,7 @@
 from customtkinter import *
 from customtkinter import CTkImage
+from tkinter import Canvas
+from customtkinter import CTkScrollableFrame
 from PIL import Image, ImageTk
 from PIL.Image import Resampling
 import sqlite3
@@ -236,7 +238,7 @@ class App(CTk):
         self.frames = {}
         
         # Criar todos os frames
-        for F in (Login, MateriasJogo, Menu, MenuProfessor, Perguntas, PerguntasProfessor, Cadastro, CentralProfessor, Jogadores):
+        for F in (Login, MateriasJogo, Menu, MenuProfessor, Perguntas, PerguntasProfessor, Cadastro, CentralProfessor, Jogadores, Instrucoes):
             frame = F(self.container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -620,7 +622,7 @@ class CentralProfessor(BaseFrame):
                   command=lambda: self.controller.show_frame(Jogadores), bg_color="#245d4a", corner_radius=11, hover_color="#c27402", border_color="#FFBB00", border_width=3,  image=img_jogadores, compound="top").grid(row=1, column=1, padx=15, pady=10)
 
         CTkButton(self, height=300, width=200, text="INSTRUÇÕES", fg_color="#FF9700",
-                  text_color="#ffffff", font=("courier new",22,"bold"), bg_color="#245d4a", corner_radius=11, hover_color="#c27402", border_color="#FFBB00", border_width=3,  image=img_instrucoes, compound="top").grid(row=1, column=2, padx=15, pady=10)
+                  text_color="#ffffff", font=("courier new",22,"bold"), bg_color="#245d4a", corner_radius=11, hover_color="#c27402", border_color="#FFBB00", border_width=3,  image=img_instrucoes, compound="top",command=lambda:self.controller.show_frame(Instrucoes)).grid(row=1, column=2, padx=15, pady=10)
 
     def redimensionar_imagem(self, event):
         nova_img = self.original_image.resize((event.width, event.height), Resampling.LANCZOS)
@@ -630,12 +632,85 @@ class CentralProfessor(BaseFrame):
 
 
 
+class Instrucoes(BaseFrame):
+    def __init__(self, parent, controller):
+        super().__init__(parent, controller)
+        self.configure(width=1200, height=780, fg_color="#1E1E1E")
+        self.criar_tela()
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+    def criar_tela(self):
+        CTkButton(self, height=35, width=70, text="<<<<", fg_color="#D22D23", hover_color="#942019", text_color="#ffffff",
+                  border_color="#DB453D", border_width=3, command=lambda: self.controller.show_frame(CentralProfessor),
+                  font=("courier new", 18, "bold")).place(x=15, y=15)
+
+        # Container com scrollbars
+        container = CTkFrame(self, fg_color="#ffffff", corner_radius=15, border_width=3, border_color="#6b6b6b")
+        container.grid(row=0, column=0, sticky="nsew", padx=65, pady=65)
+
+        # Canvas para permitir scroll
+        canvas = Canvas(container, bg="#ffffff", highlightthickness=0)
+        canvas.grid(row=0, column=0, sticky="nsew")
+
+        # Scrollbars
+        v_scroll = CTkScrollbar(container, orientation="vertical", command=canvas.yview)
+        v_scroll.grid(row=0, column=1, sticky="ns")
+        h_scroll = CTkScrollbar(container, orientation="horizontal", command=canvas.xview)
+        h_scroll.grid(row=1, column=0, sticky="ew")
+
+        # Configurar scroll no canvas
+        canvas.configure(yscrollcommand=v_scroll.set, xscrollcommand=h_scroll.set)
+
+        # Frame interno que conterá os widgets
+        scrollable_frame = CTkFrame(canvas, fg_color="#ffffff")
+        scrollable_window = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+
+        # Ajustar expansão
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        # Atualizar scrollregion automaticamente
+        def configure_scroll_region(event):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+
+        scrollable_frame.bind("<Configure>", configure_scroll_region)
+
+        # Permitir rolagem com o mouse
+        canvas.bind("<MouseWheel>", lambda event: canvas.yview_scroll(int(-1*(event.delta / 120)), "units"))
+
+        # Adicione essa linha para garantir que a coluna expanda corretamente
+        scrollable_frame.grid_columnconfigure(0, weight=1)
+
+        # Alinhamento consistente com sticky="w"
+        CTkLabel(scrollable_frame, text="1. Para cadastrar um novo usuário do tipo professor, basta ir à tela de cadastro e adicionar o novo usuário como Professor (SIM)",
+                font=("courier new", 22, "bold"), text_color="#000000").grid(row=0, column=0, sticky="w", pady=15, padx=15)
+
+        CTkLabel(scrollable_frame, text="2. Para cadastrar uma nova pergunta ou disciplina, vá até Central Professor > Perguntas e preencha os campos necessários",
+                font=("courier new", 22, "bold"), text_color="#000000").grid(row=1, column=0, sticky="w", pady=15, padx=15)
+
+        CTkLabel(scrollable_frame, text="3. Para visualizar as perguntas cadastradas, vá até a tela Central Professor > Perguntas",
+                font=("courier new", 22, "bold"), text_color="#000000").grid(row=2, column=0, sticky="w", pady=15, padx=15)
+
+        CTkLabel(scrollable_frame, text="4. Para filtrar as perguntas cadastradas, vá até Central Professor > Perguntas e aplique os filtros de dificuldade e/ou de disciplina",
+                font=("courier new", 22, "bold"), text_color="#000000").grid(row=3, column=0, sticky="w", pady=15, padx=15)
+
+        CTkLabel(scrollable_frame, text="5. Para visualizar os jogadores cadastrados, vá até a tela Central Professor > Jogadores",
+                font=("courier new", 22, "bold"), text_color="#000000").grid(row=4, column=0, sticky="w", pady=15, padx=15)
+
+        CTkLabel(scrollable_frame, text="6. Para carregar as estatísticas dos jogadores, vá até a tela Central Professor > Jogadores, clique sobre o jogador desejado, e clique sobre o botão de Carregar Estatísticas",
+                font=("courier new", 22, "bold"), text_color="#000000").grid(row=5, column=0, sticky="w", pady=15,padx=15)
+
+        
+
+
+
 
 class Jogadores(BaseFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         self.configure(width=1200, height=780, fg_color="#1E1E1E")
-        self.pack_propagate(0)
         self.criar_tela()
         self.banco = controller.banco
         self.estatisticas = []
@@ -1256,7 +1331,6 @@ class Perguntas(BaseFrame):
             
             if self.checkpoint_atingido:
                 self.checkpoint_atingido = False
-                self.label_feedback.configure(text="Você errou, mas usou seu checkpoint! Continue jogando.", text_color="#F39C12")
                 self.after(1000, self.carregar_pergunta)
             else:
                 for botao in self.botoes_alternativas:
@@ -1271,6 +1345,8 @@ class Perguntas(BaseFrame):
 
     def mostrar_janela_fim_jogo(self):
         self.imprimir_estatisticas()
+        self.usuario_atual = self.controller.banco.get_usuario_atual()
+        self.professor = self.usuario_atual[5]
         janela = CTkToplevel(self)
         janela.title("Fim de Jogo")
         janela.geometry("400x250")
@@ -1282,23 +1358,26 @@ class Perguntas(BaseFrame):
         y = (screen_height - 250) // 2
         janela.geometry(f"400x250+{x}+{y}")
 
-        CTkLabel(janela, text="Você perdeu!", font=("Arial Bold", 22), text_color="#E44982").pack(pady=20)
-        CTkLabel(janela, text=f"Pontuação final: {self.pontuacao}", font=("Arial", 18)).pack(pady=10)
+        CTkLabel(janela, text="Você perdeu!", font=("courier new", 22,"bold"), text_color="#D22D23").pack(pady=20)
+        CTkLabel(janela, text=f"Pontuação final: {self.pontuacao}", font=("courier new", 18,"bold")).pack(pady=10)
 
         def voltar_menu():
             janela.destroy()
             self.reiniciar_jogo()
-            self.controller.show_frame(MenuProfessor)
+            if self.professor == "S":
+                self.controller.show_frame(MenuProfessor)
+            else:
+                self.controller.show_frame(Menu)
 
         def recomeçar_jogo():
             janela.destroy()
             self.reiniciar_jogo()
 
-        CTkButton(janela, text="Voltar ao Menu", font=("Arial Bold", 16), fg_color="#888888", 
-                command=voltar_menu, width=200).pack(pady=10)
+        CTkButton(janela, text="Voltar ao Menu", font=("courier new", 16,"bold"), fg_color="#FF9700",hover_color="#c27402", border_color="#FFBB00",border_width=3, 
+                command=voltar_menu, width=200,height=30).pack(pady=10)
 
-        CTkButton(janela, text="Recomeçar Jogo", font=("Arial Bold", 16), fg_color="#601E88", 
-                command=recomeçar_jogo, width=200).pack(pady=10)
+        CTkButton(janela, text="Recomeçar Jogo", font=("courier new", 16,"bold"), fg_color="#25734D",hover_color="#14402b", border_color="#34A16D",  border_width=3, 
+                command=recomeçar_jogo, width=200, height=30).pack(pady=10)
         
     def reiniciar_jogo(self):
         self.perguntas = self.obter_perguntas()
@@ -1324,7 +1403,8 @@ class Perguntas(BaseFrame):
     def mostrar_janela_jogo_concluido(self):
         self.atualizar_dados_usuario()
         self.imprimir_estatisticas()
-        
+        self.usuario_atual = self.controller.banco.get_usuario_atual()
+        self.professor = self.usuario_atual[5]
         janela = CTkToplevel(self)
         janela.title("Fim de Jogo")
         janela.geometry("400x250")
@@ -1336,22 +1416,25 @@ class Perguntas(BaseFrame):
         y = (screen_height - 250) // 2
         janela.geometry(f"400x250+{x}+{y}")
 
-        CTkLabel(janela, text="Você Ganhouu!", font=("Arial Bold", 22), text_color="#E44982").pack(pady=20)
-        CTkLabel(janela, text=f"Pontuação final: {self.pontuacao}", font=("Arial", 18)).pack(pady=10)
+        CTkLabel(janela, text="Você Ganhouu!", font=("courier new", 22, "bold"), text_color="#25734D").pack(pady=20)
+        CTkLabel(janela, text=f"Pontuação final: {self.pontuacao}", font=("courier new", 18,"bold")).pack(pady=10)
 
         def voltar_menu():
             janela.destroy()
             self.reiniciar_jogo()
-            self.controller.show_frame(MenuProfessor)
+            if self.professor == "S":
+                self.controller.show_frame(MenuProfessor)
+            else:
+                self.controller.show_frame(Menu)
 
         def recomeçar_jogo():
             janela.destroy()
             self.reiniciar_jogo()
 
-        CTkButton(janela, text="Voltar ao Menu", font=("Arial Bold", 16), fg_color="#888888", 
+        CTkButton(janela, text="Voltar ao Menu", font=("courier new", 16, "bold"), fg_color="#FF9700",hover_color="#c27402", border_color="#FFBB00",border_width=3,height=30, 
                 command=voltar_menu, width=200).pack(pady=10)
 
-        CTkButton(janela, text="Recomeçar Jogo", font=("Arial Bold", 16), fg_color="#601E88", 
+        CTkButton(janela, text="Recomeçar Jogo", font=("courier new", 16, "bold"), fg_color="#25734D",hover_color="#14402b", border_color="#34A16D",  border_width=3, height=30, 
                 command=recomeçar_jogo, width=200).pack(pady=10)
 
 
