@@ -57,22 +57,67 @@ class BancoDeDados:
         except Exception as e:
             print(f"Erro ao atualizar estatísticas do usuário: {e}")
 
-    def inserir_perguntas_geog(self):
+    def inserir_perguntas_mat(self):
         try:
             comandos = [
-                # FÁCEIS (F)
-                '''INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia)
-                VALUES ('F', 'Qual é o maior oceano do mundo?', 'Atlântico', 'Índico', 'Ártico', 'Pacífico', 'Pacífico', 'É o maior e mais profundo oceano.', 'GEOG')''',
-                # ... (restante das perguntas)
+                # Fácil (F) - 15 perguntas
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual é a função das raízes nas plantas?', 'Absorver água e nutrientes', 'Produzir sementes', 'Realizar fotossíntese', 'Atrair polinizadores', 'Absorver água e nutrientes', 'As raízes absorvem água e sais minerais.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual órgão bombeia o sangue no corpo humano?', 'Coração', 'Pulmão', 'Fígado', 'Rim', 'Coração', 'O coração é responsável pela circulação sanguínea.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'O que é fotossíntese?', 'Processo das plantas para produzir energia', 'Respiração celular', 'Digestão', 'Reprodução', 'Processo das plantas para produzir energia', 'A fotossíntese usa luz solar para produzir energia.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual componente do sangue transporta oxigênio?', 'Hemoglobina', 'Plaquetas', 'Plasma', 'Glóbulos brancos', 'Hemoglobina', 'Hemoglobina transporta oxigênio no sangue.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual animal é um mamífero?', 'Cachorro', 'Cobra', 'Tubarão', 'Pombo', 'Cachorro', 'Mamíferos possuem pelos e amamentam filhotes.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual o órgão responsável pela respiração nos humanos?', 'Pulmão', 'Fígado', 'Coração', 'Estômago', 'Pulmão', 'Os pulmões realizam as trocas gasosas.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual o principal nutriente absorvido pelas plantas?', 'Água', 'Proteína', 'Gordura', 'Carboidrato', 'Água', 'A água é essencial para as plantas.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual é o sentido do paladar?', 'Língua', 'Nariz', 'Olhos', 'Ouvidos', 'Língua', 'A língua detecta sabores.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual destes animais é um réptil?', 'Cobra', 'Gato', 'Elefante', 'Golfinho', 'Cobra', 'Cobras são répteis.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'O que as plantas precisam para crescer?', 'Luz solar, água e nutrientes', 'Oxigênio e calor', 'Gás carbônico e fogo', 'Solo e vento', 'Luz solar, água e nutrientes', 'Esses são os principais fatores para o crescimento.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual é o sistema do corpo responsável pela digestão?', 'Sistema digestório', 'Sistema nervoso', 'Sistema respiratório', 'Sistema circulatório', 'Sistema digestório', 'O sistema digestório processa os alimentos.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual célula é a unidade básica dos seres vivos?', 'Célula', 'Átomo', 'Molécula', 'Tecido', 'Célula', 'Todos os seres vivos são formados por células.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual é a cor das plantas?', 'Verde', 'Azul', 'Vermelho', 'Amarelo', 'Verde', 'Devido à clorofila.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual é o maior órgão do corpo humano?', 'Pele', 'Fígado', 'Cérebro', 'Pulmão', 'Pele', 'A pele é o maior órgão do corpo.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('F', 'Qual destes é um animal invertebrado?', 'Inseto', 'Cachorro', 'Águia', 'Elefante', 'Inseto', 'Insetos não possuem coluna vertebral.', 'BIO')",
+
+                # Médio (M) - 15 perguntas
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual organela celular produz energia?', 'Mitocôndria', 'Ribossomo', 'Cloroplasto', 'Lisossomo', 'Mitocôndria', 'Mitocôndria é a “usina de energia” da célula.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual é a função dos ribossomos?', 'Síntese de proteínas', 'Produção de lipídios', 'Digestão celular', 'Armazenamento de água', 'Síntese de proteínas', 'Ribossomos produzem proteínas.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual tipo de reprodução ocorre por bipartição?', 'Assexuada', 'Sexuada', 'Bipartição', 'Fragmentação', 'Bipartição', 'Bactérias se reproduzem por bipartição.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual sistema humano combate infecções?', 'Sistema imunológico', 'Sistema digestório', 'Sistema nervoso', 'Sistema circulatório', 'Sistema imunológico', 'Sistema imunológico defende o corpo.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual é a função dos glóbulos brancos?', 'Defender o organismo', 'Transportar oxigênio', 'Coagular sangue', 'Produzir hormônios', 'Defender o organismo', 'Glóbulos brancos combatem infecções.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'O que é DNA?', 'Material genético', 'Proteína', 'Hormônio', 'Enzima', 'Material genético', 'DNA contém informação genética.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual processo celular replica o DNA?', 'Fase S', 'Mitose', 'Meiose', 'Fase G1', 'Fase S', 'Na fase S ocorre a replicação do DNA.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'O que fazem os cloroplastos?', 'Fotossíntese', 'Respiração', 'Digestão', 'Excreção', 'Fotossíntese', 'Cloroplastos captam luz para energia.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual é o tecido responsável pelo transporte de água nas plantas?', 'Xilema', 'Floema', 'Parênquima', 'Colênquima', 'Xilema', 'Xilema transporta água.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual a função do sistema nervoso?', 'Controlar as funções do corpo', 'Transportar oxigênio', 'Digestionar alimentos', 'Produzir hormônios', 'Controlar as funções do corpo', 'O sistema nervoso controla o corpo.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'O que é a respiração celular?', 'Produção de energia em células', 'Fotossíntese', 'Transporte de nutrientes', 'Divisão celular', 'Produção de energia em células', 'Respiração celular libera energia.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual é a principal molécula energética das células?', 'ATP', 'ADN', 'ARN', 'Glicose', 'ATP', 'ATP é a “moeda energética”.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual é a função do floema nas plantas?', 'Transportar seiva elaborada', 'Transportar seiva bruta', 'Suportar a planta', 'Armazenar nutrientes', 'Transportar seiva elaborada', 'Floema leva nutrientes para as células.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual tipo de tecido forma os músculos?', 'Tecido muscular', 'Tecido epitelial', 'Tecido conjuntivo', 'Tecido nervoso', 'Tecido muscular', 'Músculos são formados por tecido muscular.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('M', 'Qual a principal função dos glóbulos vermelhos?', 'Transportar oxigênio', 'Defender o corpo', 'Coagular sangue', 'Produzir anticorpos', 'Transportar oxigênio', 'Glóbulos vermelhos levam oxigênio.', 'BIO')",
+
+                # Difícil (D) - 15 perguntas
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'Qual a função dos lisossomos?', 'Degradação de substâncias', 'Produção de energia', 'Síntese de proteínas', 'Transporte celular', 'Degradação de substâncias', 'Lisossomos digerem resíduos.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'Qual é o papel do DNA?', 'Armazenar informação genética', 'Produzir proteínas', 'Regular metabolismo', 'Gerar energia', 'Armazenar informação genética', 'DNA contém o código genético.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'O que ocorre na fase S do ciclo celular?', 'Duplicação do DNA', 'Divisão celular', 'Crescimento celular', 'Morte celular', 'Duplicação do DNA', 'DNA é replicado na fase S.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'Qual hormônio é produzido pela tireoide?', 'Tiroxina', 'Insulina', 'Adrenalina', 'Cortisol', 'Tiroxina', 'Tiroxina regula o metabolismo.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'Qual processo produz gametas?', 'Meiose', 'Mitose', 'Fissão binária', 'Fragmentação', 'Meiose', 'Meiose reduz cromossomos pela metade.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'Qual é a função das enzimas?', 'Catalisar reações químicas', 'Produzir energia', 'Armazenar nutrientes', 'Defender células', 'Catalisar reações químicas', 'Enzimas aceleram reações.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'O que são nucleotídeos?', 'Unidades do DNA e RNA', 'Tipos de proteínas', 'Moléculas de gordura', 'Partes da célula', 'Unidades do DNA e RNA', 'Nucleotídeos formam ácidos nucleicos.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'Qual o processo da respiração celular?', 'Glicose + oxigênio → energia + CO2 + água', 'Fotossíntese', 'Fermentação', 'Digestão', 'Glicose + oxigênio → energia + CO2 + água', 'Respiração celular libera energia.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'O que ocorre na mitose?', 'Divisão celular para crescimento', 'Produção de gametas', 'Replicação do DNA', 'Morte celular', 'Divisão celular para crescimento', 'Mitose divide células para crescimento.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'Qual a função dos plasmídeos nas bactérias?', 'Transferir genes', 'Produzir energia', 'Formar parede celular', 'Armazenar nutrientes', 'Transferir genes', 'Plasmídeos carregam genes extras.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'O que é apoptose?', 'Morte celular programada', 'Crescimento celular', 'Divisão celular', 'Metabolismo', 'Morte celular programada', 'Apoptose é morte celular controlada.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'Qual a estrutura que controla a entrada e saída na célula?', 'Membrana plasmática', 'Núcleo', 'Citoplasma', 'Mitocôndria', 'Membrana plasmática', 'Membrana controla o que entra e sai.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'O que são anticorpos?', 'Proteínas que combatem antígenos', 'Vitaminas', 'Hormônios', 'Enzimas', 'Proteínas que combatem antígenos', 'Anticorpos protegem contra invasores.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'Qual é o papel do RNA mensageiro?', 'Transcrever informação do DNA para proteína', 'Transportar oxigênio', 'Produzir energia', 'Degradar nutrientes', 'Transcrever informação do DNA para proteína', 'RNA mensageiro leva código para ribossomos.', 'BIO')",
+                "INSERT INTO Pergunta (dificuldade, pergunta, altA, altB, altC, altD, correta, dica, materia) VALUES ('D', 'Qual o papel do sistema endócrino?', 'Produzir hormônios', 'Defender o corpo', 'Realizar respiração', 'Controlar movimentos', 'Produzir hormônios', 'Sistema endócrino regula funções pelo sangue.', 'BIO')",
             ]
             for sql in comandos:
                 self.cursor.execute(sql)
-
             self.conexao.commit()
             print("Todas as perguntas foram inseridas com sucesso!")
-
         except Exception as e:
             print(f"Erro ao inserir perguntas: {e}")
+
 
     def carregar_estatisticas(self,id_jogador):
         self.cursor.execute("SELECT pontuacao_max, tempo_medio, num_acertos, qntd_jogos FROM Usuario WHERE id = ?", (id_jogador,))
@@ -191,7 +236,7 @@ class App(CTk):
         self.frames = {}
         
         # Criar todos os frames
-        for F in (Login, MateriasJogo,MateriasProfessor, Menu, MenuProfessor, Perguntas, PerguntasProfessor, Cadastro, CentralProfessor, Jogadores):
+        for F in (Login, MateriasJogo, Menu, MenuProfessor, Perguntas, PerguntasProfessor, Cadastro, CentralProfessor, Jogadores):
             frame = F(self.container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -375,7 +420,7 @@ class Login(BaseFrame):
     
     
     #def cadastrar_geog(self):
-        #self.controller.banco.inserir_perguntas_geog()
+        #self.controller.banco.inserir_perguntas_mat()
 
 
 class Cadastro(BaseFrame):
@@ -545,7 +590,7 @@ class CentralProfessor(BaseFrame):
         # Configura o grid principal da tela
         self.grid_rowconfigure((0, 2), weight=1)  # Espaço acima e abaixo dos botões
         self.grid_rowconfigure(1, weight=3)       # Linha dos botões
-        self.grid_columnconfigure((0, 1, 2, 3), weight=1)  # 4 colunas para os botões
+        self.grid_columnconfigure((0, 1, 2), weight=1)  # 3 colunas para os botões
 
         # Carrega e exibe a imagem de fundo
         self.original_image = Image.open("imagens/fundo-verde-balatro-horizontal.png")
@@ -574,12 +619,8 @@ class CentralProfessor(BaseFrame):
                   text_color="#ffffff", font=("courier new",22,"bold"),
                   command=lambda: self.controller.show_frame(Jogadores), bg_color="#245d4a", corner_radius=11, hover_color="#c27402", border_color="#FFBB00", border_width=3,  image=img_jogadores, compound="top").grid(row=1, column=1, padx=15, pady=10)
 
-        CTkButton(self, height=300, width=200, text="DISCIPLINAS", fg_color="#FF9700",
-                  text_color="#ffffff", font=("courier new",22,"bold"),
-                  command=lambda: self.controller.show_frame(MateriasProfessor), bg_color="#245d4a", corner_radius=11, hover_color="#c27402", border_color="#FFBB00", border_width=3,  image=img_disciplinas, compound="top").grid(row=1, column=2, padx=15, pady=10)
-
         CTkButton(self, height=300, width=200, text="INSTRUÇÕES", fg_color="#FF9700",
-                  text_color="#ffffff", font=("courier new",22,"bold"), bg_color="#245d4a", corner_radius=11, hover_color="#c27402", border_color="#FFBB00", border_width=3,  image=img_instrucoes, compound="top").grid(row=1, column=3, padx=15, pady=10)
+                  text_color="#ffffff", font=("courier new",22,"bold"), bg_color="#245d4a", corner_radius=11, hover_color="#c27402", border_color="#FFBB00", border_width=3,  image=img_instrucoes, compound="top").grid(row=1, column=2, padx=15, pady=10)
 
     def redimensionar_imagem(self, event):
         nova_img = self.original_image.resize((event.width, event.height), Resampling.LANCZOS)
@@ -776,74 +817,6 @@ class MateriasJogo(BaseFrame):
         
         
 
-class MateriasProfessor(BaseFrame):
-    def __init__(self, parent, controller):
-        super().__init__(parent, controller)
-        self.configure(width=1200, height=780, fg_color="#ffffff")
-        self.criar_tela()
-        self.mostrar_materias_perguntas()
-
-        self.grid_columnconfigure(0, weight=1, uniform="grupo")
-        self.grid_columnconfigure(1, weight=1, uniform="grupo")
-        self.grid_rowconfigure(0, weight=1)
-        
-    
-    def criar_tela(self):
-        # Frame da esquerda (50% da tela)
-        self.left_frame = CTkFrame(self, fg_color="#333", corner_radius=0)
-        self.left_frame.grid(row=0, column=0, sticky="nsew")  # sem padx
-
-        # Frame da direita (50% da tela)
-        self.right_frame = CTkFrame(self, fg_color="#555", corner_radius=0)
-        self.right_frame.grid(row=0, column=1, sticky="nsew")  # sem padx
-
-        # Conteúdo do frame da direita
-        self.texto_materia = CTkLabel(self.right_frame, text="Insira a nova matéria: ", text_color="#000")
-        self.texto_materia.grid(row=0, column=0, padx=40, pady=80)
-
-        self.btn_cadastrar_materia = CTkButton(
-            self.right_frame, text="Cadastrar matéria",
-            fg_color="#E44982", command=self.adicionar_matéria
-        )
-        self.btn_cadastrar_materia.grid(row=1, column=0, padx=40, pady=10, sticky="ew")
-
-        self.materia = CTkEntry(self.right_frame, height=25, fg_color="#ffffff")
-        self.materia.grid(row=2, column=0, padx=40, pady=10, sticky="ew")
-
-        colunas = ("Disciplinas", "Número de Perguntas")
-        self.tree = ttk.Treeview(
-            self.left_frame,
-            columns=colunas,
-            show="headings"
-        )
-        self.tree.grid(row=0, column=0, sticky="nsew", padx=40, pady=(40, 10))
-
-        # Scrollbar vertical (à direita da treeview)
-        scrollbar_y = ttk.Scrollbar(self.left_frame, orient="vertical", command=self.tree.yview)
-        scrollbar_y.grid(row=0, column=1, sticky="ns", pady=(40, 10))  # Alinha com a treeview
-
-        # Scrollbar horizontal (abaixo da treeview)
-        scrollbar_x = ttk.Scrollbar(self.left_frame, orient="horizontal", command=self.tree.xview)
-        scrollbar_x.grid(row=1, column=0, sticky="ew", padx=40)  # Alinha com a treeview
-
-        # Vincula os scrolls à treeview
-        self.tree.configure(yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set)
-
-        # Cabeçalhos e colunas
-        for col in colunas:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=150, anchor="center")
-
-
-    def mostrar_materias_perguntas(self):
-        for sigla, qtd in self.controller.banco.carregar_materias_perguntas():
-            self.tree.insert("", "end", values=(sigla, qtd))
-
-    def adicionar_matéria(self):
-        if self.materia.get() == "":
-            msgbox.showerror("Erro", "Digite alguma matéria para cadastro!")
-        else:
-            self.controller.banco.cadastrar_materia(self.materia.get())
 
 
 class MenuProfessor(BaseFrame):
@@ -1110,7 +1083,7 @@ class Perguntas(BaseFrame):
         random.shuffle(self.perguntas_medias)
         random.shuffle(self.perguntas_dificeis)
 
-        self.perguntas = self.perguntas_faceis[0:1] + self.perguntas_medias[0:1] + self.perguntas_dificeis[0:1]
+        self.perguntas = self.perguntas_faceis[0:6] + self.perguntas_medias[0:7] + self.perguntas_dificeis[0:6]
         
         cursor.close()
         conexao.close()
@@ -1421,40 +1394,40 @@ class PerguntasProfessor(BaseFrame):
         self.frame_disciplinas.grid(row = 0, column = 0, padx=20, pady=(60,3), sticky="ew")
         self.frame_disciplinas.grid_columnconfigure(1, weight=1)
 
-        CTkLabel(self.frame_disciplinas, text="Nova disciplina:", font=("courier new",18,"bold")).grid(row=0, column=0, padx=(10,4),pady=5)
+        CTkLabel(self.frame_disciplinas, text="Nova disciplina:", font=("courier new",18,"bold"),text_color="#ffffff").grid(row=0, column=0, padx=(10,4),pady=5)
 
-        self.input_nova_disciplina = CTkEntry(self.frame_disciplinas, height=35, fg_color="#3B5055", font=("courier new",14,"bold"), border_width=2, border_color="#B5C6D0")
+        self.input_nova_disciplina = CTkEntry(self.frame_disciplinas, height=35, fg_color="#3B5055", font=("courier new",14,"bold"), border_width=2, border_color="#B5C6D0",text_color="#ffffff")
         self.input_nova_disciplina.grid(row=0, column = 1, padx=5, pady=5, sticky="ew")
 
         self.cadastrar_disciplina = CTkButton(self.frame_disciplinas, text="ADD", height=35, width=50, font=("courier new",14,"bold"), fg_color="#25734D", hover_color="#14402b", command=self.adicionar_materia)
         self.cadastrar_disciplina.grid(row = 0, column = 2, pady=5, padx=6)
 
-        CTkLabel(self.left_frame, text="Pergunta:", font=("courier new", 18, "bold")).grid(row=1, column=0, sticky="w", padx=20, pady=(7, 0))
+        CTkLabel(self.left_frame, text="Pergunta:", font=("courier new", 18, "bold"),text_color="#ffffff").grid(row=1, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_pergunta = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
         self.input_pergunta.grid(row=2, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Alternativa A:", font=("courier new", 18, "bold")).grid(row=3, column=0, sticky="w", padx=20, pady=(7, 0))
+        CTkLabel(self.left_frame, text="Alternativa A:", font=("courier new", 18, "bold"),text_color="#ffffff").grid(row=3, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_alt_a = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
         self.input_alt_a.grid(row=4, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Alternativa B:", font=("courier new", 18, "bold")).grid(row=5, column=0, sticky="w", padx=20, pady=(7, 0))
+        CTkLabel(self.left_frame, text="Alternativa B:", font=("courier new", 18, "bold"),text_color="#ffffff").grid(row=5, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_alt_b = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
         self.input_alt_b.grid(row=6, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Alternativa C:", font=("courier new", 18, "bold")).grid(row=7, column=0, sticky="w", padx=20, pady=(7, 0))
+        CTkLabel(self.left_frame, text="Alternativa C:", font=("courier new", 18, "bold"),text_color="#ffffff").grid(row=7, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_alt_c = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
         self.input_alt_c.grid(row=8, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Alternativa D:", font=("courier new", 18, "bold")).grid(row=9, column=0, sticky="w", padx=20, pady=(7, 0))
+        CTkLabel(self.left_frame, text="Alternativa D:", font=("courier new", 18, "bold"),text_color="#ffffff").grid(row=9, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_alt_d = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
         self.input_alt_d.grid(row=10, column=0, padx=20, pady=5, sticky="ew")
 
-        CTkLabel(self.left_frame, text="Dica:", font=("courier new", 18, "bold")).grid(row=11, column=0, sticky="w", padx=20, pady=(7, 0))
+        CTkLabel(self.left_frame, text="Dica:", font=("courier new", 18, "bold"),text_color="#ffffff").grid(row=11, column=0, sticky="w", padx=20, pady=(7, 0))
         self.input_dica = CTkEntry(self.left_frame, font=("courier new", 14, "bold"), height=37, fg_color="#3B5055", border_color="#B5C6D0",
                                        border_width=2, text_color="#ffffff")
         self.input_dica.grid(row=12, column=0, padx=20, pady=5, sticky="ew")
@@ -1480,7 +1453,7 @@ class PerguntasProfessor(BaseFrame):
         self.frame_filtros = CTkFrame(self.right_frame, fg_color= "transparent", corner_radius=0)
         self.frame_filtros.grid(row=0, column=0,padx=5, pady=25)
 
-        CTkLabel(self.frame_filtros, text="Filtrar: ", font=("courier new", 16,"bold")).grid(row=0, column=0, padx=6, pady=5)
+        CTkLabel(self.frame_filtros, text="Filtrar: ", font=("courier new", 16,"bold"),text_color="#ffffff").grid(row=0, column=0, padx=6, pady=5)
 
         self.filtro_disciplina = CTkOptionMenu(self.frame_filtros,values=self.materias+ ["Todas"],font=("courier new",14,"bold"), text_color="#ffffff", fg_color="#3B5055",button_color="#3B5055",button_hover_color="#FF9700", command=self.filtro_disciplina)
         self.filtro_disciplina.set("Disciplina")
