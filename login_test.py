@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from app import Login, App  
+from testepp import Login, App  
 import tkinter.messagebox as msgbox
 
 @pytest.fixture

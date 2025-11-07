@@ -1,7 +1,7 @@
 import pytest
 from customtkinter import CTk
 from unittest.mock import Mock, patch
-from app import Cadastro  
+from testepp import Cadastro  
 
 @pytest.fixture
 def mock_controller():
