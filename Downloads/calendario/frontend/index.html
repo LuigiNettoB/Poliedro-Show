@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendário de Projetos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F6F3; --surface: #FFFFFF; --surface2: #F0EEE9;
+    --border: rgba(0,0,0,0.09); --border-md: rgba(0,0,0,0.14);
+    --text: #1A1917; --muted: #6B6860; --hint: #A09E99;
+    --purple: #534AB7; --purple-lt: #EEEDFE; --purple-dk: #26215C;
+    --teal: #1D9E75; --teal-lt: #E1F5EE; --teal-dk: #04342C;
+    --blue: #378ADD; --blue-lt: #E6F1FB; --blue-dk: #042C53;
+    --red: #E24B4A; --red-lt: #FCEBEB; --red-dk: #501313;
+    --radius: 10px; --shadow: 0 1px 3px rgba(0,0,0,0.07),0 4px 16px rgba(0,0,0,0.04);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+  .app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+  .logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600}
+  .logo-icon{width:28px;height:28px;background:var(--purple);border-radius:7px;display:flex;align-items:center;justify-content:center}
+  .logo-icon svg{width:16px;height:16px}
+
+  .main{padding:24px 28px;max-width:1300px;margin:0 auto}
+
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:24px}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+  .stat-card .lbl{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+  .stat-card .val{font-size:26px;font-weight:600;font-family:monospace;line-height:1}
+  .stat-card .sub{font-size:11px;color:var(--hint);margin-top:4px}
+
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  input[type=text],select{height:36px;border:1px solid var(--border-md);border-radius:6px;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:0 12px;outline:none}
+  input[type=text]:focus,select:focus{border-color:var(--purple)}
+  input[type=date]{height:38px;border:1px solid var(--border-md);border-radius:6px;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:0 10px;outline:none;width:100%}
+
+  .btn{height:36px;padding:0 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-radius:6px;border:1px solid var(--border-md);background:var(--surface);color:var(--text);display:inline-flex;align-items:center;gap:6px;transition:background .12s}
+  .btn:hover{background:var(--surface2)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-primary{background:var(--purple);color:var(--purple-lt);border-color:var(--purple)}
+  .btn-primary:hover{background:#3C3489;border-color:#3C3489}
+  .btn-danger{background:var(--red-lt);color:var(--red-dk);border-color:rgba(226,75,74,.3)}
+  .btn-danger:hover{background:#F7C1C1}
+
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .months-header{display:flex;background:var(--surface2);border-bottom:1px solid var(--border)}
+  .label-col{min-width:168px;width:168px;flex-shrink:0;border-right:1px solid var(--border);padding:8px 16px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .months-row{flex:1;display:grid;grid-template-columns:repeat(12,1fr)}
+  .month-cell{font-size:11px;font-weight:500;color:var(--muted);text-align:center;padding:8px 0;border-right:1px solid var(--border)}
+  .month-cell:last-child{border-right:none}
+  .month-cell.cur{color:var(--purple);font-weight:600}
+
+  .row-wrap{border-top:1px solid var(--border)}
+  .project-header{display:flex;align-items:center;background:var(--surface2)}
+  .proj-name-cell{min-width:168px;width:168px;flex-shrink:0;border-right:1px solid var(--border);padding:6px 10px 6px 16px;display:flex;align-items:center;gap:6px}
+  .proj-name{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .icon-btn{background:none;border:none;cursor:pointer;color:var(--hint);font-size:12px;padding:3px;border-radius:4px;opacity:0;transition:opacity .1s,color .1s;flex-shrink:0}
+  .project-header:hover .icon-btn,.segment-row:hover .icon-btn{opacity:1}
+  .icon-btn:hover{color:var(--purple)}
+  .proj-header-grid{flex:1;position:relative;height:36px}
+
+  .segment-row{display:flex;align-items:center;min-height:40px;border-top:1px solid var(--border)}
+  .seg-label-cell{min-width:168px;width:168px;flex-shrink:0;border-right:1px solid var(--border);padding:4px 10px 4px 24px;display:flex;align-items:center;gap:4px}
+  .seg-label{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+  .seg-grid{flex:1;position:relative;height:40px}
+
+  .grid-lines{position:absolute;inset:0;display:grid;grid-template-columns:repeat(12,1fr);pointer-events:none}
+  .grid-line{border-right:1px solid var(--border)}
+  .grid-line:last-child{border-right:none}
+  .grid-line.cur-col{background:rgba(83,74,183,.04)}
+  .today-line{position:absolute;top:0;bottom:0;width:2px;background:var(--red);opacity:.65;z-index:5;pointer-events:none}
+
+  .bar{position:absolute;height:26px;top:7px;border-radius:5px;display:flex;align-items:center;padding:0 9px;font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:3;transition:filter .12s}
+  .bar:hover{filter:brightness(.9)}
+  .s-andamento{background:#AFA9EC;color:#26215C}
+  .s-planejado{background:#85B7EB;color:#042C53}
+  .s-concluido{background:#5DCAA5;color:#04342C}
+  .s-atrasado{background:#F09595;color:#501313}
+
+  .add-seg-row{border-top:1px dashed var(--border);padding:5px 0 5px 24px}
+  .add-seg-btn{background:none;border:1px dashed var(--border-md);border-radius:5px;padding:3px 12px;font-size:11px;color:var(--hint);cursor:pointer;font-family:'DM Sans',sans-serif}
+  .add-seg-btn:hover{color:var(--purple);border-color:var(--purple);background:rgba(83,74,183,.05)}
+
+  .legend{display:flex;gap:18px;flex-wrap:wrap;padding:12px 0 0}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+  .legend-dot{width:10px;height:10px;border-radius:3px}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:#F7F6F3;font-size:13px;padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:999;font-family:'DM Sans',sans-serif}
+  .toast.show{opacity:1}
+  .toast.err{background:#A32D2D}
+
+  /* LOADING */
+  .loading{text-align:center;padding:48px;color:var(--hint);font-size:14px}
+  .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border-md);border-top-color:var(--purple);border-radius:50%;animation:spin .7s linear infinite;margin-right:8px;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* MODAL */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(20,18,15,.45);z-index:200;align-items:center;justify-content:center}
+  .overlay.open{display:flex}
+  .modal{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border-md);box-shadow:0 8px 40px rgba(0,0,0,.18);padding:28px;width:400px;max-width:94vw}
+  .modal-title{font-size:16px;font-weight:600;margin-bottom:20px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px}
+  .field input[type=text],.field select,.field input[type=date]{width:100%;height:38px;font-size:13px;padding:0 12px}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .modal-footer{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+  /* API CONFIG BANNER */
+  .api-banner{background:#FFF8E6;border:1px solid #EFD080;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#5C4A00;display:flex;align-items:center;gap:10px}
+  .api-banner strong{font-weight:600}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="2" rx="1" fill="white" opacity=".9"/><rect x="1" y="7.5" width="8" height="2" rx="1" fill="white" opacity=".7"/><rect x="1" y="11" width="11" height="2" rx="1" fill="white" opacity=".5"/></svg>
+    </div>
+    Calendário de Projetos
+  </div>
+  <select id="year-sel" onchange="changeYear()" style="height:32px;font-size:12px"></select>
+</header>
+
+<main class="main">
+
+  <!-- Banner de configuração da API -->
+  <div class="api-banner" id="api-banner">
+    ⚙️ <span><strong>Configure a URL da API:</strong> edite a variável <code>API_URL</code> no início do script deste arquivo com a URL do seu backend no Railway.</span>
+  </div>
+
+  <div class="summary-grid" id="summary">
+    <div class="stat-card"><div class="lbl">Total</div><div class="val" id="s-total">—</div></div>
+    <div class="stat-card"><div class="lbl">Em andamento</div><div class="val" id="s-andamento" style="color:#534AB7">—</div></div>
+    <div class="stat-card"><div class="lbl">Concluídos</div><div class="val" id="s-concluido" style="color:#1D9E75">—</div></div>
+    <div class="stat-card"><div class="lbl">Atrasados</div><div class="val" id="s-atrasado" style="color:#E24B4A">—</div></div>
+    <div class="stat-card"><div class="lbl">Planejados</div><div class="val" id="s-planejado" style="color:#378ADD">—</div></div>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="🔍 Buscar projeto..." oninput="render()" style="flex:1;min-width:180px">
+    <select id="fstatus" onchange="render()">
+      <option value="">Todos os status</option>
+      <option value="em andamento">Em andamento</option>
+      <option value="planejado">Planejado</option>
+      <option value="concluído">Concluído</option>
+      <option value="atrasado">Atrasado</option>
+    </select>
+    <button class="btn btn-primary" onclick="openProjectModal()">+ Novo projeto</button>
+  </div>
+
+  <div class="panel" id="panel"><div class="loading"><span class="spinner"></span>Carregando projetos...</div></div>
+
+  <div class="legend">
+    <span class="legend-item"><span class="legend-dot" style="background:#5DCAA5"></span>Concluído</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#AFA9EC"></span>Em andamento</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#85B7EB"></span>Planejado</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#F09595"></span>Atrasado</span>
+    <span class="legend-item"><span style="width:3px;height:12px;background:#E24B4A;opacity:.65;border-radius:2px;display:inline-block"></span>Hoje</span>
+  </div>
+</main>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal-box"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+//  ⚙️  CONFIGURE AQUI a URL do seu backend
+// ─────────────────────────────────────────────
+const API_URL = 'https://SUA-API.railway.app';
+// ─────────────────────────────────────────────
+
+const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const SC = {'em andamento':'s-andamento','planejado':'s-planejado','concluído':'s-concluido','atrasado':'s-atrasado'};
+
+let projects = [];
+let currentYear = new Date().getFullYear();
+const today = new Date();
+
+// ── YEAR SELECT ──────────────────────────────
+(function initYears(){
+  const sel = document.getElementById('year-sel');
+  for(let y = today.getFullYear()-2; y <= today.getFullYear()+3; y++){
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    if(y===currentYear) o.selected=true;
+    sel.appendChild(o);
+  }
+})();
+function changeYear(){ currentYear=parseInt(document.getElementById('year-sel').value); render(); }
+
+// ── TIME HELPERS ─────────────────────────────
+function tStart(){ return new Date(currentYear,0,1); }
+function tDays(){ return (new Date(currentYear,12,0)-tStart())/86400000; }
+function pct(d){ return Math.max(0,Math.min(100,(new Date(d+'T00:00:00')-tStart())/86400000/tDays()*100)); }
+function curM(){ return today.getFullYear()===currentYear ? today.getMonth() : -1; }
+function todayPct(){ return (today-tStart())/86400000/tDays()*100; }
+
+// ── API ──────────────────────────────────────
+async function api(path, method='GET', body){
+  const opts = { method, headers:{'Content-Type':'application/json'} };
+  if(body) opts.body = JSON.stringify(body);
+  const r = await fetch(API_URL+path, opts);
+  if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.error||r.statusText); }
+  return r.json();
+}
+
+async function loadProjects(){
+  try {
+    projects = await api('/projects');
+    document.getElementById('api-banner').style.display = 'none';
+    render();
+  } catch(e) {
+    document.getElementById('panel').innerHTML =
+      `<div class="loading" style="color:#A32D2D">⚠️ Não foi possível conectar à API.<br><small>${e.message}</small></div>`;
+    toast('Erro ao conectar na API. Verifique a URL.', true);
+  }
+}
+
+// ── RENDER ───────────────────────────────────
+function render(){
+  const q  = document.getElementById('search').value.toLowerCase();
+  const fs = document.getElementById('fstatus').value;
+  const cm = curM();
+  const tp = todayPct();
+
+  const filtered = projects.filter(p => {
+    if(q && !p.name.toLowerCase().includes(q)) return false;
+    if(fs && !p.segments.some(s=>s.status===fs)) return false;
+    return true;
+  });
+
+  // summary
+  const allSegs = projects.flatMap(p=>p.segments);
+  document.getElementById('s-total').textContent     = projects.length;
+  document.getElementById('s-andamento').textContent = allSegs.filter(s=>s.status==='em andamento').length;
+  document.getElementById('s-concluido').textContent = allSegs.filter(s=>s.status==='concluído').length;
+  document.getElementById('s-atrasado').textContent  = allSegs.filter(s=>s.status==='atrasado').length;
+  document.getElementById('s-planejado').textContent = allSegs.filter(s=>s.status==='planejado').length;
+
+  const gridLines = Array.from({length:12},(_,i)=>
+    `<div class="grid-line${i===cm?' cur-col':''}"></div>`).join('');
+  const todayLine = (tp>=0&&tp<=100)
+    ? `<div class="today-line" style="left:${tp.toFixed(2)}%"></div>` : '';
+
+  let html = `<div class="months-header">
+    <div class="label-col">Projeto</div>
+    <div class="months-row">${MONTHS.map((m,i)=>`<div class="month-cell${i===cm?' cur':''}">${m}</div>`).join('')}</div>
+  </div>`;
+
+  if(!filtered.length){
+    html += `<div class="loading">Nenhum projeto encontrado.</div>`;
+  }
+
+  filtered.forEach(p => {
+    const segs = fs ? p.segments.filter(s=>s.status===fs) : p.segments;
+    html += `<div class="row-wrap">
+      <div class="project-header">
+        <div class="proj-name-cell">
+          <span class="proj-name" title="${esc(p.name)}">${esc(p.name)}</span>
+          <button class="icon-btn" onclick="openProjectModal(${p.id})" title="Renomear">✎</button>
+          <button class="icon-btn" onclick="deleteProject(${p.id})" title="Excluir" style="color:var(--hint)">✕</button>
+        </div>
+        <div class="proj-header-grid">
+          <div class="grid-lines">${gridLines}</div>${todayLine}
+        </div>
+      </div>`;
+
+    segs.forEach(s => {
+      const sl=pct(s.start_date), el=pct(s.end_date), w=Math.max(el-sl,.8);
+      html += `<div class="segment-row">
+        <div class="seg-label-cell">
+          <span class="seg-label" title="${esc(s.label)}">↳ ${esc(s.label)}</span>
+          <button class="icon-btn" onclick="openSegModal(${p.id},${s.id})" title="Editar">✎</button>
+        </div>
+        <div class="seg-grid">
+          <div class="grid-lines">${gridLines}</div>${todayLine}
+          <div class="bar ${SC[s.status]||'s-planejado'}"
+            style="left:${sl.toFixed(2)}%;width:${w.toFixed(2)}%"
+            onclick="openSegModal(${p.id},${s.id})"
+            title="${esc(s.label)}: ${s.start_date} → ${s.end_date}">${esc(s.label)}</div>
+        </div>
+      </div>`;
+    });
+
+    html += `<div class="add-seg-row">
+      <button class="add-seg-btn" onclick="openSegModal(${p.id},null)">+ adicionar bloco</button>
+    </div></div>`;
+  });
+
+  document.getElementById('panel').innerHTML = html;
+}
+
+// ── PROJECT MODAL ────────────────────────────
+function openProjectModal(pid){
+  const p = pid ? projects.find(x=>x.id===pid) : null;
+  setModal(`
+    <div class="modal-title">${p?'Renomear projeto':'Novo projeto'}</div>
+    <div class="field"><label>Nome do projeto</label>
+      <input type="text" id="m-name" value="${p?esc(p.name):''}" placeholder="Ex: Lançamento do produto">
+    </div>
+    <div class="modal-footer">
+      <div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" id="m-save" onclick="saveProject(${pid||'null'})">Salvar</button>
+      </div>
+    </div>`);
+  setTimeout(()=>document.getElementById('m-name').focus(),50);
+}
+
+async function saveProject(pid){
+  const name = document.getElementById('m-name').value.trim();
+  if(!name) return;
+  setBusy('m-save');
+  try {
+    if(pid){
+      const updated = await api(`/projects/${pid}`,'PUT',{name});
+      projects.find(x=>x.id===pid).name = updated.name;
+    } else {
+      const created = await api('/projects','POST',{name});
+      created.segments = [];
+      projects.push(created);
+    }
+    closeModal(); render(); toast(pid?'Projeto renomeado.':'Projeto criado.');
+  } catch(e){ toast(e.message,true); }
+}
+
+async function deleteProject(pid){
+  if(!confirm('Excluir este projeto e todos os seus blocos?')) return;
+  try {
+    await api(`/projects/${pid}`,'DELETE');
+    projects = projects.filter(x=>x.id!==pid);
+    render(); toast('Projeto excluído.');
+  } catch(e){ toast(e.message,true); }
+}
+
+// ── SEGMENT MODAL ────────────────────────────
+function openSegModal(pid, sid){
+  const p = projects.find(x=>x.id===pid);
+  const s = sid ? p.segments.find(x=>x.id===sid) : null;
+  setModal(`
+    <div class="modal-title">${s?'Editar bloco':'Novo bloco — '+esc(p.name)}</div>
+    <div class="field"><label>Rótulo</label>
+      <input type="text" id="m-label" value="${s?esc(s.label):''}" placeholder="Ex: Sprint 1, Revisão, Deploy...">
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Início</label><input type="date" id="m-start" value="${s?s.start_date:''}"></div>
+      <div class="field"><label>Fim</label><input type="date" id="m-end" value="${s?s.end_date:''}"></div>
+    </div>
+    <div class="field"><label>Status</label>
+      <select id="m-status">${['planejado','em andamento','concluído','atrasado'].map(v=>
+        `<option value="${v}"${s&&s.status===v?' selected':''}>${v[0].toUpperCase()+v.slice(1)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="modal-footer">
+      <div>${s?`<button class="btn btn-danger" onclick="deleteSeg(${pid},${sid})">Excluir bloco</button>`:'<div></div>'}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" id="m-save" onclick="saveSeg(${pid},${sid||'null'})">Salvar</button>
+      </div>
+    </div>`);
+  setTimeout(()=>document.getElementById('m-label').focus(),50);
+}
+
+async function saveSeg(pid, sid){
+  const label=document.getElementById('m-label').value.trim();
+  const start_date=document.getElementById('m-start').value;
+  const end_date=document.getElementById('m-end').value;
+  const status=document.getElementById('m-status').value;
+  if(!label||!start_date||!end_date) return;
+  setBusy('m-save');
+  try {
+    const p = projects.find(x=>x.id===pid);
+    if(sid){
+      const updated = await api(`/segments/${sid}`,'PUT',{label,start_date,end_date,status});
+      const i = p.segments.findIndex(x=>x.id===sid);
+      p.segments[i] = updated;
+    } else {
+      const created = await api(`/projects/${pid}/segments`,'POST',{label,start_date,end_date,status});
+      p.segments.push(created);
+    }
+    closeModal(); render(); toast(sid?'Bloco atualizado.':'Bloco adicionado.');
+  } catch(e){ toast(e.message,true); }
+}
+
+async function deleteSeg(pid, sid){
+  if(!confirm('Excluir este bloco?')) return;
+  try {
+    await api(`/segments/${sid}`,'DELETE');
+    const p = projects.find(x=>x.id===pid);
+    p.segments = p.segments.filter(x=>x.id!==sid);
+    closeModal(); render(); toast('Bloco excluído.');
+  } catch(e){ toast(e.message,true); }
+}
+
+// ── HELPERS ──────────────────────────────────
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function setModal(html){ document.getElementById('modal-box').innerHTML=html; document.getElementById('overlay').classList.add('open'); }
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); }
+function setBusy(id){ const b=document.getElementById(id); if(b){b.disabled=true;b.textContent='Salvando...';} }
+
+let _toastTimer;
+function toast(msg, err=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show'+(err?' err':'');
+  clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+document.getElementById('overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('overlay')) closeModal();
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+
+// ── INIT ─────────────────────────────────────
+loadProjects();
+</script>
+</body>
+</html>
